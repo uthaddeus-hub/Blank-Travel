@@ -1,1 +1,874 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blank Travel · Meet your local</title>
+<meta name="description" content="Just landed somewhere new? Find a local who knows the city and get their guide, a quick chat, or a walk around town.">
+<meta property="og:title" content="Blank Travel · Meet your local">
+<meta property="og:description" content="Real people who know the city. Guides, chats and walks for travelers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F6F4EE;
+    --card: #FFFFFF;
+    --ink: #15171C;
+    --muted: #5B606B;
+    --faint: #8A8F99;
+    --line: #E2DFD6;
+    --blue: #2440D8;
+    --blue-soft: #E6EAFD;
+    --mint: #D3EEDD;
+    --mint-ink: #1E6B43;
+    --sun: #FF7A45;
+    --radius: 18px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body { background: var(--paper); color: var(--ink); font-family: 'Figtree', system-ui, -apple-system, Arial, sans-serif; line-height: 1.5; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; cursor: pointer; }
+  .display { font-family: 'Bricolage Grotesque', 'Figtree', Arial, sans-serif; letter-spacing: -0.02em; }
+  .container { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+  .skip { position: absolute; left: -999px; }
+  .skip:focus { left: 16px; top: 16px; background: var(--ink); color: #fff; padding: 8px 12px; border-radius: 8px; z-index: 99; }
+  :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
+  /* Nav */
+  nav { position: sticky; top: 0; z-index: 20; background: rgba(246,244,238,.88); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .nav-in { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 16px; }
+  .logo { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 19px; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .logo-mark { width: 26px; height: 14px; border: 2.5px solid var(--ink); border-radius: 999px; position: relative; }
+  .logo-mark::after { content: ""; position: absolute; right: 3px; top: 2px; width: 5px; height: 5px; border-radius: 50%; background: var(--sun); }
+  .nav-links { display: flex; gap: 22px; font-weight: 600; font-size: 15px; color: var(--muted); }
+  .nav-links a:hover { color: var(--ink); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 999px; font-weight: 700; font-size: 15px; padding: 12px 20px; transition: transform .15s, background .15s; white-space: nowrap; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-ink { background: var(--ink); color: #fff; }
+  .btn-blue { background: var(--blue); color: #fff; }
+  .btn-line { background: transparent; color: var(--ink); border: 1.5px solid var(--ink); }
+  .btn-sm { padding: 9px 16px; font-size: 14px; }
+
+  /* Hero */
+  .hero { padding: 72px 0 48px; }
+  .hero-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 48px; align-items: center; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; background: var(--mint); color: var(--mint-ink); font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 999px; }
+  .pill .d { width: 7px; height: 7px; border-radius: 50%; background: var(--mint-ink); }
+  h1 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: clamp(44px, 6.4vw, 80px); line-height: .98; letter-spacing: -0.035em; margin-top: 18px; }
+  h1 em { font-style: normal; color: var(--blue); }
+  .lede { font-size: 19px; color: var(--muted); margin-top: 18px; max-width: 34ch; }
+  .search { margin-top: 28px; display: flex; flex-direction: row; align-items: center; gap: 8px; background: var(--card); border: 1.5px solid var(--ink); border-radius: 999px; padding: 6px; max-width: 520px; box-shadow: 4px 4px 0 var(--ink); }
+  .search input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 17px; padding: 10px 14px; color: var(--ink); }
+  .search input:focus { outline: none; }
+  .search:focus-within { box-shadow: 4px 4px 0 var(--blue); border-color: var(--blue); }
+  .quick { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .quick button { background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 14px; font-weight: 600; color: var(--muted); }
+  .quick button:hover { border-color: var(--ink); color: var(--ink); }
+
+  /* Hero pass */
+  .pass { background: var(--card); border-radius: 22px; border: 1.5px solid var(--ink); box-shadow: 8px 8px 0 var(--ink); overflow: hidden; transform: rotate(2deg); }
+  .pass-top { background: var(--blue); color: #fff; padding: 16px 22px; display: flex; justify-content: space-between; font-weight: 700; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+  .pass-body { padding: 22px; }
+  .route { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .route .code { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 54px; line-height: 1; }
+  .route .lbl { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .route .plane { flex: 1; border-top: 2px dashed var(--line); position: relative; }
+  .route .plane::after { content: "✈"; position: absolute; left: 50%; top: -14px; transform: translateX(-50%); background: var(--card); padding: 0 6px; font-size: 18px; color: var(--blue); }
+  .perf { border-top: 2px dashed var(--line); margin: 20px -22px 18px; position: relative; }
+  .perf::before, .perf::after { content: ""; position: absolute; top: -12px; width: 22px; height: 22px; border-radius: 50%; background: var(--paper); border: 1.5px solid var(--ink); }
+  .perf::before { left: -12px; } .perf::after { right: -12px; }
+  .pass-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .pass-row div span { display: block; font-size: 12px; color: var(--faint); text-transform: uppercase; letter-spacing: .1em; font-weight: 700; }
+  .pass-row div b { font-size: 17px; }
+
+  /* Sections */
+  section { padding: 64px 0; }
+  .sec-head { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 28px; flex-wrap: wrap; }
+  h2 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: clamp(32px, 4.2vw, 48px); line-height: 1.02; letter-spacing: -0.03em; }
+  .sec-sub { color: var(--muted); font-size: 17px; margin-top: 8px; max-width: 52ch; }
+  .tag { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--blue); margin-bottom: 10px; display: block; }
+
+  /* City cards */
+  .cities { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .city { text-align: left; background: var(--card); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 22px; transition: border-color .15s, transform .15s, box-shadow .15s; color: var(--ink); }
+  .city:hover { border-color: var(--ink); transform: translateY(-3px); box-shadow: 4px 4px 0 var(--ink); }
+  .city-top { display: flex; justify-content: space-between; align-items: start; }
+  .city .code { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 40px; line-height: 1; }
+  .city .name { font-weight: 700; font-size: 17px; margin-top: 4px; }
+  .city-foot { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 12px; }
+  .chip { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--blue-soft); color: var(--blue); white-space: nowrap; }
+  .chip.open { background: #FFE9DF; color: #B2441A; }
+  .empty { text-align: center; padding: 40px 20px; border: 1.5px dashed var(--line); border-radius: var(--radius); color: var(--muted); }
+  .empty b { color: var(--ink); display: block; font-size: 18px; margin-bottom: 6px; }
+
+  /* City panel */
+  .panel-wrap { position: fixed; inset: 0; z-index: 50; display: none; }
+  .panel-wrap.show { display: block; }
+  .scrim { position: absolute; inset: 0; background: rgba(21,23,28,.45); }
+  .panel { position: absolute; right: 0; top: 0; bottom: 0; width: min(560px, 100%); background: var(--paper); overflow-y: auto; padding: 24px 22px 40px; box-shadow: -10px 0 40px rgba(0,0,0,.15); animation: slide .25s ease; }
+  @keyframes slide { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .panel-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+  .panel-head .code { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 56px; line-height: 1; }
+  .panel-head .name { font-weight: 700; font-size: 20px; }
+  .x { background: var(--card); border: 1.5px solid var(--ink); border-radius: 50%; width: 40px; height: 40px; font-size: 18px; flex: none; }
+  .panel h3 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 22px; margin: 28px 0 12px; }
+  .local { background: var(--card); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 18px; margin-bottom: 12px; }
+  .local-head { display: flex; gap: 14px; align-items: center; }
+  .av { width: 54px; height: 54px; border-radius: 50%; background: var(--blue); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; flex: none; overflow: hidden; }
+  .av img { width: 100%; height: 100%; object-fit: cover; }
+  .local-name { font-weight: 700; font-size: 18px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .local-meta { font-size: 14px; color: var(--muted); }
+  .badge { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: var(--mint); color: var(--mint-ink); }
+  .local-bio { margin-top: 12px; color: var(--muted); font-size: 15px; }
+  .vibes { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+  .vibes span { font-size: 13px; font-weight: 600; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+  .offers { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+  .offer { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; background: var(--paper); }
+  .offer b { font-size: 15px; display: block; }
+  .offer small { color: var(--muted); font-size: 13px; }
+  .offer .price { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; margin-right: 10px; }
+  .offer-r { display: flex; align-items: center; flex: none; }
+  .tips { display: flex; flex-direction: column; gap: 8px; }
+  .tip { background: var(--card); border-left: 4px solid var(--sun); border-radius: 10px; padding: 12px 14px; }
+  .tip b { display: block; }
+  .tip span { color: var(--muted); font-size: 14px; }
+
+  /* Who's in town */
+  .land-card { background: var(--card); border: 1.5px solid var(--ink); border-radius: 22px; padding: 26px; box-shadow: 6px 6px 0 var(--ink); }
+  .land-card h3 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; line-height: 1.1; }
+  .land-card p.s { color: var(--muted); margin-top: 6px; font-size: 15px; }
+  .consent { flex-direction: row; align-items: flex-start; gap: 10px; font-weight: 600; }
+  .consent input { width: 18px; height: 18px; flex: none; margin-top: 2px; }
+  .town { display: flex; flex-direction: column; gap: 8px; }
+  .trav-row { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+  .trav-row.match { border-color: var(--blue); background: var(--blue-soft); }
+  .trav-row .av { width: 40px; height: 40px; font-size: 15px; }
+  .trav-row b { display: block; font-size: 15px; }
+  .trav-row small { color: var(--muted); font-size: 13px; }
+  .trav-row .same { margin-left: auto; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: var(--blue); color: #fff; white-space: nowrap; }
+  .lay-link { margin-top: 10px; font-size: 14px; color: var(--muted); }
+  .lay-link a { color: var(--blue); font-weight: 700; }
+
+  /* Event check-in */
+  body.event-mode main, body.event-mode footer, body.event-mode .nav-links, body.event-mode nav .btn { display: none; }
+  #eventView { display: none; padding: 32px 0 64px; }
+  body.event-mode #eventView { display: block; }
+  .ev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+  .ev-head h1 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: clamp(34px, 6vw, 56px); line-height: 1; letter-spacing: -.02em; }
+  .ev-head h1 em { font-style: normal; color: var(--blue); }
+  .ev-head p { color: var(--muted); font-size: 17px; margin-top: 12px; }
+  .ev-pass { margin-top: 4px; transform: rotate(-1.5deg); }
+  .ev-pass .pass-top { background: var(--ink); }
+  .ev-pass .route .code { font-size: 54px; }
+  .ev-pass .pname { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; margin-bottom: 14px; }
+  .ev-pass .pass-row b { font-size: 15px; }
+  .ev-pass .barcode { height: 46px; margin-top: 18px; border-radius: 4px; background: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 7px, transparent 7px 9px, var(--ink) 9px 10px, transparent 10px 13px); }
+  .ev-pass .pno { font-size: 12px; font-weight: 700; letter-spacing: .14em; color: var(--faint); margin-top: 8px; text-transform: uppercase; }
+  .ev-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
+  .ev-note { font-size: 14px; color: var(--muted); margin-top: 10px; }
+  .going-sum { font-weight: 700; margin-bottom: 10px; }
+  @media (max-width: 860px) { .ev-grid { grid-template-columns: 1fr; } .ev-pass { transform: none; } .ev-grid.done #evRight { order: -1; } }
+
+  /* How it works */
+  .how { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .how-card { border-radius: 22px; padding: 28px; }
+  .how-card.trav { background: var(--blue); color: #fff; }
+  .how-card.loc { background: var(--card); border: 1.5px solid var(--ink); }
+  .how-card h3 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; }
+  .steps { list-style: none; margin-top: 18px; display: flex; flex-direction: column; gap: 14px; counter-reset: s; }
+  .steps li { counter-increment: s; display: flex; gap: 14px; font-size: 16px; }
+  .steps li::before { content: counter(s); flex: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; }
+  .trav .steps li::before { background: #fff; color: var(--blue); }
+  .loc .steps li::before { background: var(--ink); color: #fff; }
+  .trav .steps li { color: #E4E8FF; }
+  .loc .steps li { color: var(--muted); }
+  .steps b { color: inherit; }
+  .trav .steps b { color: #fff; } .loc .steps b { color: var(--ink); }
+
+  /* Forms */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .form-card { background: var(--card); border: 1.5px solid var(--line); border-radius: 22px; padding: 26px; }
+  .form-card h3 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; line-height: 1.1; }
+  .form-card p.s { color: var(--muted); margin-top: 6px; font-size: 15px; }
+  form { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
+  label { font-size: 13px; font-weight: 700; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
+  input, select, textarea { font: inherit; font-size: 16px; color: var(--ink); background: var(--paper); border: 1.5px solid var(--line); border-radius: 12px; padding: 11px 13px; width: 100%; }
+  textarea { min-height: 96px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .msg { font-size: 14px; font-weight: 600; min-height: 20px; color: var(--mint-ink); }
+  .msg.err { color: #B2441A; }
+
+  /* Modal */
+  .modal-wrap { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; padding: 16px; }
+  .modal-wrap.show { display: flex; }
+  .modal { position: relative; background: var(--paper); border-radius: 22px; border: 1.5px solid var(--ink); width: min(460px, 100%); max-height: 92vh; overflow-y: auto; padding: 24px; box-shadow: 8px 8px 0 var(--ink); }
+  .modal h3 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 24px; line-height: 1.1; padding-right: 48px; }
+  .modal .x { position: absolute; right: 16px; top: 16px; }
+
+  footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--muted); font-size: 14px; }
+  .foot-in { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
+
+  @media (max-width: 860px) {
+    .hero-grid, .how, .form-grid { grid-template-columns: 1fr; }
+    .pass { transform: none; max-width: 440px; }
+    .nav-links { display: none; }
+    .hero { padding-top: 44px; }
+  }
+  @media (max-width: 420px) {
+    .row2 { grid-template-columns: 1fr; }
+    .search { flex-direction: column; border-radius: 18px; }
+    .search .btn { width: 100%; }
+    .route .code { font-size: 44px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#cities">Skip to cities</a>
+
+<nav>
+  <div class="container nav-in">
+    <a href="#" class="logo"><span class="logo-mark" aria-hidden="true"></span><span id="brandName"></span></a>
+    <div class="nav-links">
+      <a href="#cities">Cities</a>
+      <a href="#landing">Who's in town</a>
+      <a href="#how">How it works</a>
+      <a href="#share">Share a spot</a>
+    </div>
+    <a href="#become" class="btn btn-ink btn-sm">Become a local</a>
+  </div>
+</nav>
+
+<main>
+  <header class="hero">
+    <div class="container hero-grid">
+      <div>
+        <span class="pill"><span class="d"></span><span id="heroPill"></span></span>
+        <h1>Just landed?<br><em>Meet your local.</em></h1>
+        <p class="lede" id="heroLede"></p>
+        <form class="search" id="searchForm" role="search">
+          <input id="searchInput" type="search" placeholder="Where are you landing?" aria-label="Search for a city" autocomplete="off">
+          <button class="btn btn-blue" type="submit">Find locals</button>
+        </form>
+        <div class="quick" id="quick"></div>
+      </div>
+      <div aria-hidden="true">
+        <div class="pass">
+          <div class="pass-top"><span>Boarding pass</span><span>Local guide</span></div>
+          <div class="pass-body">
+            <div class="route">
+              <div><div class="code">YOU</div><div class="lbl">Just landed</div></div>
+              <div class="plane"></div>
+              <div style="text-align:right"><div class="code">LCL</div><div class="lbl">Someone who knows</div></div>
+            </div>
+            <div class="perf"></div>
+            <div class="pass-row">
+              <div><span>Gate</span><b>Their favorite spots</b></div>
+              <div><span>Seat</span><b>Wherever the locals sit</b></div>
+              <div><span>Boarding</span><b>Right now</b></div>
+              <div><span>Class</span><b>Insider</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="cities">
+    <div class="container">
+      <div class="sec-head">
+        <div>
+          <span class="tag">Cities</span>
+          <h2>Pick your city</h2>
+          <p class="sec-sub">Every local here lives in the city or knows it well, and it's free. Grab their list, ask them questions, or explore together.</p>
+        </div>
+      </div>
+      <div class="cities" id="cityGrid"></div>
+      <div class="empty" id="noResults" style="display:none;margin-top:14px">
+        <b>No locals there yet.</b>
+        Know that city? <a href="#become" style="color:var(--blue);font-weight:700">Become its first local →</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="landing" style="padding-top:24px">
+    <div class="container">
+      <div class="land-card">
+        <span class="tag">Who's in town</span>
+        <h3>I'm landing in…</h3>
+        <p class="s">Post your trip and see who else is in the same city on the same days. Only your first name and handle show.</p>
+        <form id="landForm" data-kind="New trip posted (Who's in town)">
+          <div class="row2">
+            <label>First name<input name="first_name" required maxlength="40" autocomplete="given-name"></label>
+            <label>Instagram or TikTok<input name="handle" maxlength="40" placeholder="@yourhandle"></label>
+          </div>
+          <div class="row2">
+            <label>City<select name="city" id="landCity" required></select></label>
+            <label>Here for<select name="here_for"><option>Nightlife</option><option>Food</option><option>Meeting people</option><option>Work trip</option><option>Just exploring</option></select></label>
+          </div>
+          <div class="row2">
+            <label>Arriving<input name="arrive_on" type="date" required></label>
+            <label>Leaving<input name="leave_on" type="date" required></label>
+          </div>
+          <label class="consent"><input type="checkbox" name="consent" required><span>Show my first name, handle and dates to other travelers in that city.</span></label>
+          <button class="btn btn-blue" type="submit">Post my trip</button>
+          <div class="msg" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" style="padding-top:24px">
+    <div class="container">
+      <div class="sec-head"><div><span class="tag">How it works</span><h2>Two ways in</h2></div></div>
+      <div class="how">
+        <div class="how-card trav">
+          <h3>Traveling somewhere?</h3>
+          <ol class="steps">
+            <li><span><b>Search your city.</b> See who knows it and what they're into.</span></li>
+            <li><span><b>Pick how you want help.</b> A list to read, questions answered, or a walk together. All free.</span></li>
+            <li><span><b>Land like you live there.</b> Skip the tourist traps and go where locals go.</span></li>
+          </ol>
+        </div>
+        <div class="how-card loc">
+          <h3>Know a city well?</h3>
+          <ol class="steps">
+            <li><span><b>Apply as a local.</b> Tell us your city and what you know.</span></li>
+            <li><span><b>Pick how you help.</b> Share your list, answer messages, or meet up.</span></li>
+            <li><span><b>Become the go-to for your city.</b> Travelers already ask you where to go. Now they can find you.</span></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="become">
+    <div class="container form-grid">
+      <div class="form-card">
+        <span class="tag">For locals</span>
+        <h3>Become a local</h3>
+        <p class="s">Live somewhere, or been enough times to know it? Help travelers land like locals.</p>
+        <form id="localForm" data-kind="New local application">
+          <div class="row2">
+            <label>Name<input name="name" required autocomplete="name"></label>
+            <label>Email<input name="email" type="email" required autocomplete="email"></label>
+          </div>
+          <div class="row2">
+            <label>City<input name="city" required placeholder="e.g. Mexico City"></label>
+            <label>You…<select name="relationship"><option>Live there</option><option>Lived there</option><option>Visit often</option></select></label>
+          </div>
+          <label>What do you know best?<textarea name="about" required placeholder="Food, nightlife, Black-owned spots, hidden beaches, safe neighborhoods…"></textarea></label>
+          <label>Instagram or TikTok<input name="handle" placeholder="@yourhandle"></label>
+          <button class="btn btn-ink" type="submit">Apply</button>
+          <div class="msg" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+      <div class="form-card" id="share">
+        <span class="tag">For everyone</span>
+        <h3>Share a spot</h3>
+        <p class="s">Been somewhere worth it? Drop it here so the next traveler knows.</p>
+        <form id="tipForm" data-kind="New spot shared">
+          <div class="row2">
+            <label>City<input name="city" required placeholder="e.g. Chicago"></label>
+            <label>Spot name<input name="spot" required></label>
+          </div>
+          <label>Why go?<textarea name="why" required placeholder="What to order, when to go, who it's for…"></textarea></label>
+          <div class="row2">
+            <label>Your name<input name="name" autocomplete="name"></label>
+            <label>Email (optional)<input name="email" type="email" autocomplete="email"></label>
+          </div>
+          <button class="btn btn-blue" type="submit">Share it</button>
+          <div class="msg" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container foot-in">
+    <span id="footBrand"></span>
+    <span id="footLinks"></span>
+  </div>
+</footer>
+
+<!-- Event check-in (shows when the link has ?event=atl, ?event=hou, ?event=chi) -->
+<section id="eventView" aria-live="polite">
+  <div class="container ev-grid">
+    <div id="evLeft"></div>
+    <div id="evRight"></div>
+  </div>
+</section>
+
+<!-- City panel -->
+<div class="panel-wrap" id="panelWrap" aria-hidden="true">
+  <div class="scrim" data-close></div>
+  <aside class="panel" role="dialog" aria-modal="true" aria-labelledby="panelName" id="panel"></aside>
+</div>
+
+<!-- Booking modal -->
+<div class="modal-wrap" id="modalWrap" aria-hidden="true">
+  <div class="scrim" data-close-modal></div>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" id="modal"></div>
+</div>
+
+<script>
+/* =====================================================================
+   EDIT EVERYTHING HERE. This is the only part you need to change.
+
+   • To add a city: copy one { code, name } line in "cities".
+   • To add a local: copy one block in "locals". "cities" lists the city
+     codes they cover. Everything is free.
+   • payLink (optional): paste a link to a free Google Doc or Notion page
+     with the guide. Leave it "" and the button becomes "Ask", which
+     sends you the traveler's details so the local can reach out.
+   • formEndpoint: make a free form at formspree.io and paste its link.
+     Every application, shared spot and request lands in your email.
+   ===================================================================== */
+const CONFIG = {
+  brand: "Blank Travel",
+  heroPill: "Free · Locals who know the city",
+  heroLede: "Real people who live in the city or know it well. Get their list, ask them anything, or explore together. Always free.",
+  formEndpoint: "https://formspree.io/f/xrppvqbv",                 // e.g. "https://formspree.io/f/abcdwxyz"
+  contactEmail: "",                 // shown in the footer, e.g. "hello@blanklocations.com"
+  instagram: "https://www.instagram.com/blanklocations",
+
+  // WHO'S IN TOWN: paste your Supabase Project URL and anon public key.
+  // Leave them "" and trip posts go to your Formspree email instead.
+  supabaseUrl: "",                  // e.g. "https://xxxx.supabase.co"
+  supabaseKey: "",                  // the long "anon public" key
+  layoverLink: "https://layover-theta.vercel.app",
+
+  cities: [
+    { code: "MEX", name: "Mexico City" },
+    { code: "ATL", name: "Atlanta" },
+    { code: "MIA", name: "Miami" },
+    { code: "CHI", name: "Chicago" },
+    { code: "DCA", name: "Washington, DC" },
+    { code: "DFW", name: "Dallas" },
+    { code: "RNO", name: "Reno" },
+    { code: "BOI", name: "Boise" },
+    { code: "SFO", name: "San Francisco" },
+    { code: "HOU", name: "Houston" }
+  ],
+
+  // BLANK LOCATIONS EVENTS: each one gets its own check-in link + boarding pass.
+  // Link format: your-site.vercel.app/?event=atl
+  // Fill in venue, time and poshLink. Leave "" and the pass shows a placeholder.
+  events: [
+    { slug: "atl", city: "ATL", title: "Blank Friday Atlanta", date: "2026-11-27", venue: "", time: "", poshLink: "" },
+    { slug: "hou", city: "HOU", title: "Blank Friday Houston", date: "2026-11-27", venue: "", time: "", poshLink: "" },
+    { slug: "chi", city: "CHI", title: "Blank Friday Chicago", date: "2026-11-27", venue: "Pressbox · 47 W Polk St", time: "9PM – 2AM", poshLink: "" }
+  ],
+
+  // The offers a local can sell. Change names, descriptions or prices per local below.
+  locals: [
+    {
+      name: "Thad",
+      handle: "@yungthad.7",
+      link: "https://www.tiktok.com/@yungthad.7",
+      photo: "",                    // paste an image link, or leave "" for initials
+      badge: "Founder",
+      cities: ["MEX", "ATL", "MIA", "CHI", "DCA", "DFW", "RNO", "BOI", "SFO", "HOU"],
+      knows: "Visits often",
+      bio: "I travel city to city and post where I go. These are the spots I'd send my friends to.",
+      vibes: ["Nightlife", "Food", "Black-owned spots", "Running routes"],
+      offers: [
+        { title: "City guide", desc: "My full list: stay, eat, go out", price: "Free", payLink: "" },
+        { title: "Ask a local", desc: "Message me while you're there", price: "Free", payLink: "" }
+      ]
+    }
+  ],
+
+  // Free tips shown on each city page. Add real ones as people share them.
+  // Format: { city: "MEX", spot: "Spot name", why: "Why it's worth it", by: "Name" }
+  tips: []
+};
+/* ===================== END OF EDITABLE SECTION ===================== */
+
+(function () {
+  const $ = (s, el = document) => el.querySelector(s);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const initials = (n) => n.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  const localsIn = (code) => CONFIG.locals.filter((l) => l.cities.includes(code));
+  const cityBy = (code) => CONFIG.cities.find((c) => c.code === code);
+  const _unused = (code) => {
+    const prices = localsIn(code).flatMap((l) => l.offers.map((o) => parseFloat(String(o.price).replace(/[^0-9.]/g, "")))).filter((n) => !isNaN(n));
+    return prices.length ? "$" + Math.min(...prices) : null;
+  };
+
+  // Brand text
+  document.title = `${CONFIG.brand} · Meet your local`;
+  $("#brandName").textContent = CONFIG.brand;
+  $("#heroPill").textContent = CONFIG.heroPill;
+  $("#heroLede").textContent = CONFIG.heroLede;
+  $("#footBrand").textContent = `© ${new Date().getFullYear()} ${CONFIG.brand}`;
+  $("#footLinks").innerHTML = [
+    CONFIG.contactEmail ? `<a href="mailto:${esc(CONFIG.contactEmail)}">${esc(CONFIG.contactEmail)}</a>` : "",
+    CONFIG.instagram ? `<a href="${esc(CONFIG.instagram)}" target="_blank" rel="noopener">Instagram</a>` : ""
+  ].filter(Boolean).join(" · ");
+
+  // Who's in town data
+  let landings = [];
+  const today = () => new Date().toISOString().slice(0, 10);
+  const inCity = (code) => landings.filter((t) => t.city === code && t.leave_on >= today());
+  const fmt = (d) => new Date(d + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  const hasDb = () => CONFIG.supabaseUrl && CONFIG.supabaseKey;
+  const dbHeaders = () => ({ apikey: CONFIG.supabaseKey, Authorization: "Bearer " + CONFIG.supabaseKey, "Content-Type": "application/json" });
+  function myTrips() { try { return JSON.parse(localStorage.getItem("bt_my_trips") || "[]"); } catch { return []; } }
+  function saveMyTrip(t) { try { const m = myTrips(); m.push(t); localStorage.setItem("bt_my_trips", JSON.stringify(m.slice(-10))); } catch {} }
+  const overlapsMe = (t) => myTrips().some((m) => m.city === t.city && m.arrive_on <= t.leave_on && t.arrive_on <= m.leave_on && !(m.first_name === t.first_name && m.arrive_on === t.arrive_on && m.leave_on === t.leave_on));
+  async function loadLandings() {
+    if (!hasDb()) return;
+    try {
+      const res = await fetch(CONFIG.supabaseUrl.replace(/\/$/, "") + "/rest/v1/landings?select=first_name,handle,city,arrive_on,leave_on,here_for&order=arrive_on.asc&limit=500", { headers: dbHeaders() });
+      if (!res.ok) throw new Error();
+      landings = await res.json();
+      renderCities($("#searchInput").value);
+    } catch {}
+  }
+
+  // City grid
+  function renderCities(filter = "") {
+    const q = filter.trim().toLowerCase();
+    const list = CONFIG.cities.filter((c) => !q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q));
+    $("#cityGrid").innerHTML = list.map((c) => {
+      const n = localsIn(c.code).length;
+      const t = inCity(c.code).length;
+            return `<button class="city" data-city="${esc(c.code)}" aria-label="See locals in ${esc(c.name)}">
+        <div class="city-top">
+          <div><div class="code">${esc(c.code)}</div><div class="name">${esc(c.name)}</div></div>
+          ${n ? `<span class="chip">${n} local${n > 1 ? "s" : ""}</span>` : `<span class="chip open">Open</span>`}
+        </div>
+        <div class="city-foot"><span>${t ? `${esc(c.name)} · ${t} in town` : (n ? "Free" : "Be the first local")}</span><span aria-hidden="true">→</span></div>
+      </button>`;
+    }).join("");
+    $("#noResults").style.display = list.length ? "none" : "block";
+  }
+  renderCities();
+  $("#landCity").innerHTML = CONFIG.cities.map((c) => `<option value="${esc(c.code)}">${esc(c.name)}</option>`).join("");
+  loadLandings();
+
+  $("#quick").innerHTML = CONFIG.cities.slice(0, 5).map((c) => `<button type="button" data-city="${esc(c.code)}">${esc(c.name)}</button>`).join("");
+
+  $("#searchInput").addEventListener("input", (e) => renderCities(e.target.value));
+  $("#searchForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const q = $("#searchInput").value.trim().toLowerCase();
+    renderCities(q);
+    const exact = CONFIG.cities.find((c) => c.name.toLowerCase() === q || c.code.toLowerCase() === q)
+      || CONFIG.cities.filter((c) => c.name.toLowerCase().includes(q))[0];
+    if (q && exact) openCity(exact.code);
+    else document.getElementById("cities").scrollIntoView();
+  });
+
+  document.addEventListener("click", (e) => {
+    const c = e.target.closest("[data-city]");
+    if (c) openCity(c.dataset.city);
+    if (e.target.closest("[data-close]")) closePanel();
+    if (e.target.closest("[data-close-modal]")) closeModal();
+    const o = e.target.closest("[data-offer]");
+    if (o) openOffer(o.dataset.local, o.dataset.offer, o.dataset.code);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if ($("#modalWrap").classList.contains("show")) closeModal(); else closePanel();
+  });
+
+  // City panel
+  let lastFocus = null;
+  function openCity(code) {
+    const city = cityBy(code); if (!city) return;
+    lastFocus = document.activeElement;
+    const locals = localsIn(code);
+    const tips = CONFIG.tips.filter((t) => t.city === code);
+    const town = inCity(code);
+    $("#panel").innerHTML = `
+      <div class="panel-head">
+        <div><div class="code">${esc(city.code)}</div><div class="name" id="panelName">${esc(city.name)}</div></div>
+        <button class="x" data-close aria-label="Close">✕</button>
+      </div>
+      <h3>Who's in town</h3>
+      ${town.length ? `<div class="town">${town.map((t) => `<div class="trav-row${overlapsMe(t) ? " match" : ""}">
+          <div class="av">${esc(initials(t.first_name))}</div>
+          <div><b>${esc(t.first_name)}${t.handle ? ` <small>${esc(t.handle)}</small>` : ""}</b>
+          <small>${esc(fmt(t.arrive_on))} – ${esc(fmt(t.leave_on))}${t.here_for ? " · " + esc(t.here_for) : ""}</small></div>
+          ${overlapsMe(t) ? `<span class="same">Same days as you</span>` : ""}
+        </div>`).join("")}</div>`
+        : `<div class="empty"><b>Nobody's posted ${esc(city.name)} yet.</b><a href="#landing" data-close style="color:var(--blue);font-weight:700">Post your trip →</a></div>`}
+      ${CONFIG.layoverLink ? `<p class="lay-link">Traveling with friends? See when your crew overlaps on <a href="${esc(CONFIG.layoverLink)}" target="_blank" rel="noopener">Layover →</a></p>` : ""}
+      <h3>Locals</h3>
+      ${locals.length ? locals.map((l) => {
+        const li = CONFIG.locals.indexOf(l);
+        return `<article class="local">
+          <div class="local-head">
+            <div class="av">${l.photo ? `<img src="${esc(l.photo)}" alt="">` : esc(initials(l.name))}</div>
+            <div>
+              <div class="local-name">${esc(l.name)} ${l.badge ? `<span class="badge">${esc(l.badge)}</span>` : ""}</div>
+              <div class="local-meta">${esc(l.knows)}${l.handle ? ` · <a href="${esc(l.link || "#")}" target="_blank" rel="noopener" style="color:var(--blue);font-weight:600">${esc(l.handle)}</a>` : ""}</div>
+            </div>
+          </div>
+          <p class="local-bio">${esc(l.bio)}</p>
+          <div class="vibes">${(l.vibes || []).map((v) => `<span>${esc(v)}</span>`).join("")}</div>
+          <div class="offers">${l.offers.map((o, oi) => `
+            <div class="offer">
+              <div><b>${esc(o.title)}</b><small>${esc(o.desc)}</small></div>
+              <div class="offer-r"><span class="price">${esc(o.price)}</span>
+                <button class="btn ${o.payLink ? "btn-blue" : "btn-line"} btn-sm" data-offer="${oi}" data-local="${li}" data-code="${esc(code)}">${o.payLink ? "Open" : "Ask"}</button>
+              </div>
+            </div>`).join("")}
+          </div>
+        </article>`;
+      }).join("") : `<div class="empty"><b>No locals in ${esc(city.name)} yet.</b>Know it well? <a href="#become" data-close style="color:var(--blue);font-weight:700">Become its first local →</a></div>`}
+      <h3>Spots travelers shared</h3>
+      ${tips.length ? `<div class="tips">${tips.map((t) => `<div class="tip"><b>${esc(t.spot)}</b><span>${esc(t.why)}${t.by ? " · " + esc(t.by) : ""}</span></div>`).join("")}</div>`
+        : `<div class="empty"><b>No spots shared yet.</b><a href="#share" data-close style="color:var(--blue);font-weight:700">Share the first one →</a></div>`}
+    `;
+    $("#panelWrap").classList.add("show");
+    $("#panelWrap").setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    $("#panel .x").focus();
+  }
+  function closePanel() {
+    $("#panelWrap").classList.remove("show");
+    $("#panelWrap").setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    if (lastFocus) lastFocus.focus();
+  }
+
+  // Offer modal
+  function openOffer(li, oi, code) {
+    const l = CONFIG.locals[li], o = l.offers[oi], city = cityBy(code);
+    if (o.payLink) { window.open(o.payLink, "_blank", "noopener"); return; }
+    $("#modal").innerHTML = `
+      <button class="x" data-close-modal aria-label="Close">✕</button>
+      <h3 id="modalTitle">${esc(o.title)} with ${esc(l.name)}</h3>
+      <p style="color:var(--muted);margin-top:6px">${esc(city.name)} · Free. Tell ${esc(l.name)} a little about your trip and they'll reach out.</p>
+      <form id="requestForm" data-kind="New request: ${esc(o.title)} with ${esc(l.name)} (${esc(city.name)})">
+        <div class="row2">
+          <label>Name<input name="name" required autocomplete="name"></label>
+          <label>Email<input name="email" type="email" required autocomplete="email"></label>
+        </div>
+        <label>When are you there?<input name="dates" placeholder="e.g. Nov 7–10"></label>
+        <label>What are you into?<textarea name="notes" placeholder="Food, nightlife, a chill day, first time here…"></textarea></label>
+        <button class="btn btn-blue" type="submit">Send</button>
+        <div class="msg" role="status" aria-live="polite"></div>
+      </form>`;
+    $("#modalWrap").classList.add("show");
+    $("#modalWrap").setAttribute("aria-hidden", "false");
+    wireForm($("#requestForm"));
+    $("#modal input").focus();
+  }
+  function closeModal() {
+    $("#modalWrap").classList.remove("show");
+    $("#modalWrap").setAttribute("aria-hidden", "true");
+  }
+
+  // ===== Event check-in + boarding pass =====
+  const evSlug = (new URLSearchParams(location.search).get("event") || "").toLowerCase();
+  const ev = (CONFIG.events || []).find((x) => x.slug === evSlug);
+  const KNOWN = { "atlanta": "ATL", "houston": "HOU", "chicago": "CHI", "dallas": "DFW", "miami": "MIA", "new york": "NYC", "nyc": "NYC", "brooklyn": "NYC", "los angeles": "LAX", "la": "LAX", "washington": "DCA", "dc": "DCA", "charlotte": "CLT", "san francisco": "SFO", "mexico city": "MEX", "philadelphia": "PHL", "detroit": "DTW", "nashville": "BNA", "new orleans": "MSY", "austin": "AUS", "san antonio": "SAT", "orlando": "MCO", "baltimore": "BWI", "memphis": "MEM", "birmingham": "BHM", "phoenix": "PHX", "las vegas": "LAS", "denver": "DEN", "seattle": "SEA", "boston": "BOS", "st louis": "STL", "raleigh": "RDU", "tampa": "TPA", "jacksonville": "JAX" };
+  function fromCode(txt) {
+    const t = String(txt || "").toLowerCase().replace(/[^a-z ]/g, "").trim();
+    if (!t) return "---";
+    if (KNOWN[t]) return KNOWN[t];
+    const c = CONFIG.cities.find((x) => x.name.toLowerCase() === t);
+    if (c) return c.code;
+    if (/^[a-z]{3}$/.test(t)) return t.toUpperCase();
+    return t.replace(/ /g, "").slice(0, 3).toUpperCase();
+  }
+  function myCheckin() { try { return JSON.parse(localStorage.getItem("bt_checkin_" + evSlug) || "null"); } catch { return null; } }
+  function saveCheckin(c) { try { localStorage.setItem("bt_checkin_" + evSlug, JSON.stringify(c)); } catch {} }
+  let going = [];
+  const dbBase = () => CONFIG.supabaseUrl.replace(/\/$/, "") + "/rest/v1/landings";
+
+  async function loadGoing() {
+    if (!hasDb()) return;
+    try {
+      const r = await fetch(dbBase() + "?select=first_name,handle,from_city&event=eq." + encodeURIComponent(ev.slug) + "&order=created_at.asc&limit=1000", { headers: dbHeaders() });
+      if (r.ok) going = await r.json();
+    } catch {}
+  }
+
+  function renderEvent() {
+    const city = cityBy(ev.city) || { code: ev.city, name: ev.city };
+    const day = new Date(ev.date + "T12:00:00");
+    const dateTxt = day.toLocaleDateString("en-US", { month: "short", day: "numeric" }).toUpperCase();
+    const mine = myCheckin();
+    $("#eventView .ev-grid").classList.toggle("done", !!mine);
+    document.title = `${ev.title} · Boarding pass`;
+
+    $("#evLeft").innerHTML = mine ? `
+      <div class="ev-head">
+        <span class="tag">You're checked in</span>
+        <h1>See you in<br><em>${esc(city.name)}.</em></h1>
+        <p>Screenshot your boarding pass and post it on your story. Tag <b>@blanklocations</b> so we can repost you.</p>
+        <div class="ev-actions">
+          <button class="btn btn-blue" id="evShare" type="button">Share the link</button>
+          ${ev.poshLink ? `<a class="btn btn-line" href="${esc(ev.poshLink)}" target="_blank" rel="noopener">Event on Posh</a>` : ""}
+        </div>
+        <p class="ev-note">Where are you landing next? <a href="./" style="color:var(--blue);font-weight:700">Explore Blank Travel →</a></p>
+      </div>` : `
+      <div class="ev-head">
+        <span class="tag">${esc(ev.title)} · ${esc(dateTxt)}</span>
+        <h1>Check in for your<br><em>boarding pass.</em></h1>
+        <p>Tell us where you're coming from. You'll get a boarding pass to post, and you'll see who else is coming.</p>
+      </div>
+      <form id="evForm">
+        <div class="row2">
+          <label>First name<input name="first_name" required maxlength="40" autocomplete="given-name"></label>
+          <label>Instagram or TikTok<input name="handle" maxlength="40" placeholder="@yourhandle"></label>
+        </div>
+        <label>Coming from<input name="from_city" required maxlength="40" placeholder="e.g. Houston, or ${esc(city.name)} if you're local"></label>
+        <label class="consent"><input type="checkbox" name="consent" required><span>Show my first name, handle and where I'm coming from to others at this event.</span></label>
+        <button class="btn btn-ink" type="submit">Get my boarding pass</button>
+        <div class="msg" role="status" aria-live="polite"></div>
+        ${ev.poshLink ? `<p class="ev-note">No ticket yet? <a href="${esc(ev.poshLink)}" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">Get it on Posh →</a></p>` : ""}
+      </form>`;
+
+    const p = mine || { first_name: "Your name", from_city: "", n: null };
+    const passHtml = `
+      <div class="pass ev-pass" id="evPass">
+        <div class="pass-top"><span>Boarding pass</span><span>Blank Locations</span></div>
+        <div class="pass-body">
+          <div class="pname">${esc(p.first_name)}${mine && mine.handle ? ` <small style="font-size:15px;color:var(--muted)">${esc(mine.handle)}</small>` : ""}</div>
+          <div class="route">
+            <div><div class="code">${esc(mine ? fromCode(mine.from_city) : "YOU")}</div><div class="lbl">${esc(mine ? mine.from_city : "Coming from")}</div></div>
+            <div class="plane"></div>
+            <div style="text-align:right"><div class="code">${esc(city.code)}</div><div class="lbl">${esc(city.name)}</div></div>
+          </div>
+          <div class="perf"></div>
+          <div class="pass-row">
+            <div><span>Date</span><b>${esc(dateTxt)}</b></div>
+            <div><span>Boarding</span><b>${esc(ev.time || "Doors TBA")}</b></div>
+            <div><span>Gate</span><b>${esc(ev.venue || "Location on your Posh ticket")}</b></div>
+            <div><span>Class</span><b>Insider</b></div>
+          </div>
+          <div class="barcode" aria-hidden="true"></div>
+          <div class="pno">${mine && mine.n ? "Passenger no. " + String(mine.n).padStart(3, "0") : esc(ev.title)}</div>
+        </div>
+      </div>`;
+
+    const outOfTown = going.filter((g) => g.from_city && fromCode(g.from_city) !== city.code).length;
+    const goingHtml = going.length ? `
+      <div style="margin-top:34px">
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:22px;margin-bottom:6px">Who's coming</h3>
+        <p class="going-sum">${going.length} checked in${outOfTown ? ` · ${outOfTown} coming from out of town` : ""}</p>
+        <div class="town">${going.slice().reverse().slice(0, 60).map((g) => `<div class="trav-row">
+          <div class="av">${esc(initials(g.first_name))}</div>
+          <div><b>${esc(g.first_name)}${g.handle ? ` <small>${esc(g.handle)}</small>` : ""}</b>
+          <small>${g.from_city ? "From " + esc(g.from_city) : ""}</small></div>
+          <span class="same" style="background:var(--ink)">${esc(fromCode(g.from_city))} → ${esc(city.code)}</span>
+        </div>`).join("")}</div>
+      </div>` : "";
+    $("#evRight").innerHTML = passHtml + goingHtml;
+
+    const sh = $("#evShare");
+    if (sh) sh.addEventListener("click", async () => {
+      const url = location.origin + location.pathname + "?event=" + ev.slug;
+      try {
+        if (navigator.share) await navigator.share({ title: ev.title, text: "I'm checked in. Get your boarding pass:", url });
+        else { await navigator.clipboard.writeText(url); sh.textContent = "Link copied"; }
+      } catch {}
+    });
+
+    const f = $("#evForm");
+    if (f) f.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = $(".msg", f); msg.classList.remove("err");
+      if (!f.checkValidity()) { f.reportValidity(); return; }
+      const d = Object.fromEntries(new FormData(f).entries());
+      const row = { first_name: d.first_name.trim(), handle: d.handle.trim() || null, from_city: d.from_city.trim(), city: ev.city, arrive_on: ev.date, leave_on: ev.date, here_for: "Blank Locations", event: ev.slug };
+      msg.textContent = "Printing your pass…";
+      try {
+        if (hasDb()) {
+          const r = await fetch(dbBase(), { method: "POST", headers: { ...dbHeaders(), Prefer: "return=minimal" }, body: JSON.stringify(row) });
+          if (!r.ok) throw new Error();
+        } else if (CONFIG.formEndpoint) {
+          const r = await fetch(CONFIG.formEndpoint, { method: "POST", headers: { "Accept": "application/json", "Content-Type": "application/json" }, body: JSON.stringify({ ...row, _subject: "Event check-in: " + ev.title }) });
+          if (!r.ok) throw new Error();
+        }
+        going.push({ first_name: row.first_name, handle: row.handle, from_city: row.from_city });
+        saveCheckin({ first_name: row.first_name, handle: row.handle, from_city: row.from_city, n: going.length || null });
+        saveMyTrip({ first_name: row.first_name, city: ev.city, arrive_on: ev.date, leave_on: ev.date });
+        renderEvent();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch { msg.classList.add("err"); msg.textContent = "Something went wrong. Try again."; }
+    });
+  }
+
+  if (ev) {
+    document.body.classList.add("event-mode");
+    renderEvent();
+    loadGoing().then(renderEvent);
+  }
+
+  // Forms
+  function wireForm(form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = $(".msg", form);
+      msg.classList.remove("err");
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+      const data = Object.fromEntries(new FormData(form).entries());
+      data._subject = form.dataset.kind;
+      if (!CONFIG.formEndpoint) {
+        msg.textContent = "Almost live. Submissions open soon.";
+        return;
+      }
+      msg.textContent = "Sending…";
+      try {
+        const res = await fetch(CONFIG.formEndpoint, {
+          method: "POST",
+          headers: { "Accept": "application/json", "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error();
+        form.reset();
+        msg.textContent = "Got it. We'll be in touch soon.";
+      } catch {
+        msg.classList.add("err");
+        msg.textContent = "Something went wrong. Try again.";
+      }
+    });
+  }
+  // Post a trip
+  $("#landForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target, msg = $(".msg", form);
+    msg.classList.remove("err");
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+    const d = Object.fromEntries(new FormData(form).entries());
+    const trip = { first_name: d.first_name.trim(), handle: d.handle.trim() || null, city: d.city, arrive_on: d.arrive_on, leave_on: d.leave_on, here_for: d.here_for };
+    const err = (t) => { msg.classList.add("err"); msg.textContent = t; };
+    if (trip.leave_on < trip.arrive_on) return err("Your leaving date is before your arrival.");
+    if (trip.leave_on < today()) return err("That trip has already ended.");
+    if ((new Date(trip.leave_on) - new Date(trip.arrive_on)) / 864e5 > 60) return err("Trips can be up to 60 days.");
+    msg.textContent = "Posting…";
+    try {
+      if (hasDb()) {
+        const res = await fetch(CONFIG.supabaseUrl.replace(/\/$/, "") + "/rest/v1/landings", { method: "POST", headers: { ...dbHeaders(), Prefer: "return=minimal" }, body: JSON.stringify(trip) });
+        if (!res.ok) throw new Error();
+        landings.push(trip);
+      } else if (CONFIG.formEndpoint) {
+        const res = await fetch(CONFIG.formEndpoint, { method: "POST", headers: { "Accept": "application/json", "Content-Type": "application/json" }, body: JSON.stringify({ ...trip, _subject: form.dataset.kind }) });
+        if (!res.ok) throw new Error();
+      } else { msg.textContent = "Almost live. Trip posts open soon."; return; }
+      saveMyTrip(trip);
+      form.reset();
+      renderCities($("#searchInput").value);
+      const c = cityBy(trip.city);
+      msg.textContent = hasDb() ? `You're on the list for ${c.name}. Tap the city to see who's there.` : "Got it. Your trip is in.";
+    } catch { err("Something went wrong. Try again."); }
+  });
+
+  wireForm($("#localForm"));
+  wireForm($("#tipForm"));
+})();
+</script>
+</body>
+</html>
