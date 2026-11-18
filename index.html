@@ -151,6 +151,15 @@
   .lay-link { margin-top: 10px; font-size: 14px; color: var(--muted); }
   .lay-link a { color: var(--blue); font-weight: 700; }
 
+  /* Trip boarding pass */
+  .land-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 28px; align-items: start; }
+  .land-grid .ev-pass { margin-top: 18px; }
+  .land-grid .ev-pass .route .code { font-size: clamp(38px, 11vw, 54px); }
+  .land-grid .ev-pass .plane { margin: 0 8px; }
+  .land-grid .pass-done { margin-top: 16px; }
+  .land-grid .pass-done p { color: var(--muted); font-size: 15px; margin-top: 6px; }
+  @media (max-width: 860px) { .land-grid { grid-template-columns: 1fr; } .land-grid.done .land-pass { order: -1; } }
+
   /* Event check-in */
   body.event-mode main, body.event-mode footer, body.event-mode .nav-links, body.event-mode nav .btn { display: none; }
   #eventView { display: none; padding: 32px 0 64px; }
@@ -299,7 +308,9 @@
       <div class="land-card">
         <span class="tag">Who's in town</span>
         <h3>I'm landing in…</h3>
-        <p class="s">Post your trip and see who else is in the same city on the same days. Only your first name and handle show.</p>
+        <p class="s">Post your trip, get your boarding pass, and see who else is in the same city on the same days. Only your first name and handle show.</p>
+        <div class="land-grid" id="landGrid">
+        <div class="land-left">
         <form id="landForm" data-kind="New trip posted (Who's in town)">
           <div class="row2">
             <label>First name<input name="first_name" required maxlength="40" autocomplete="given-name"></label>
@@ -313,10 +324,15 @@
             <label>Arriving<input name="arrive_on" type="date" required></label>
             <label>Leaving<input name="leave_on" type="date" required></label>
           </div>
-          <label class="consent"><input type="checkbox" name="consent" required><span>Show my first name, handle and dates to other travelers in that city.</span></label>
-          <button class="btn btn-blue" type="submit">Post my trip</button>
+          <label>Flying in from<input name="from_city" maxlength="40" placeholder="e.g. Dallas"></label>
+          <label class="consent"><input type="checkbox" name="consent" required><span>Show my first name, handle, where I'm coming from and my dates to other travelers in that city.</span></label>
+          <button class="btn btn-blue" type="submit">Post trip &amp; get my pass</button>
           <div class="msg" role="status" aria-live="polite"></div>
         </form>
+        <div id="landDone"></div>
+        </div>
+        <div class="land-pass" id="landPass"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -524,10 +540,11 @@ const CONFIG = {
   async function loadLandings() {
     if (!hasDb()) return;
     try {
-      const res = await fetch(CONFIG.supabaseUrl.replace(/\/$/, "") + "/rest/v1/landings?select=first_name,handle,city,arrive_on,leave_on,here_for&order=arrive_on.asc&limit=500", { headers: dbHeaders() });
+      const res = await fetch(CONFIG.supabaseUrl.replace(/\/$/, "") + "/rest/v1/landings?select=first_name,handle,city,arrive_on,leave_on,here_for,from_city&order=arrive_on.asc&limit=500", { headers: dbHeaders() });
       if (!res.ok) throw new Error();
       landings = await res.json();
       renderCities($("#searchInput").value);
+      if (nextMyTrip()) renderLanding();
     } catch {}
   }
 
@@ -595,7 +612,7 @@ const CONFIG = {
       ${town.length ? `<div class="town">${town.map((t) => `<div class="trav-row${overlapsMe(t) ? " match" : ""}">
           <div class="av">${esc(initials(t.first_name))}</div>
           <div><b>${esc(t.first_name)}${t.handle ? ` <small>${esc(t.handle)}</small>` : ""}</b>
-          <small>${esc(fmt(t.arrive_on))} – ${esc(fmt(t.leave_on))}${t.here_for ? " · " + esc(t.here_for) : ""}</small></div>
+          <small>${t.from_city ? "From " + esc(t.from_city) + " · " : ""}${esc(fmt(t.arrive_on))} – ${esc(fmt(t.leave_on))}${t.here_for ? " · " + esc(t.here_for) : ""}</small></div>
           ${overlapsMe(t) ? `<span class="same">Same days as you</span>` : ""}
         </div>`).join("")}</div>`
         : `<div class="empty"><b>Nobody's posted ${esc(city.name)} yet.</b><a href="#landing" data-close style="color:var(--blue);font-weight:700">Post your trip →</a></div>`}
@@ -793,7 +810,7 @@ const CONFIG = {
         }
         going.push({ first_name: row.first_name, handle: row.handle, from_city: row.from_city });
         saveCheckin({ first_name: row.first_name, handle: row.handle, from_city: row.from_city, n: going.length || null });
-        saveMyTrip({ first_name: row.first_name, city: ev.city, arrive_on: ev.date, leave_on: ev.date });
+        saveMyTrip({ first_name: row.first_name, city: ev.city, arrive_on: ev.date, leave_on: ev.date, here_for: "Blank Locations" });
         renderEvent();
         window.scrollTo({ top: 0, behavior: "smooth" });
       } catch { msg.classList.add("err"); msg.textContent = "Something went wrong. Try again."; }
@@ -835,6 +852,84 @@ const CONFIG = {
       }
     });
   }
+  // ===== Trip boarding pass =====
+  function shortRange(a, b) {
+    if (!a) return "—";
+    const A = fmt(a).toUpperCase();
+    if (!b || b === a) return A;
+    const B = fmt(b).toUpperCase();
+    return A.split(" ")[0] === B.split(" ")[0] ? `${A} – ${B.split(" ")[1]}` : `${A} – ${B}`;
+  }
+  function tripPassHtml(t, posted) {
+    const city = cityBy(t.city) || { code: "---", name: "Where to?" };
+    const others = posted ? landings.filter((x) => x.city === t.city && x.arrive_on <= t.leave_on && t.arrive_on <= x.leave_on).length - 1 : null;
+    return `
+      <div class="pass ev-pass">
+        <div class="pass-top"><span>Boarding pass</span><span>${esc(CONFIG.brand)}</span></div>
+        <div class="pass-body">
+          <div class="pname">${esc(t.first_name || "Your name")}${t.handle ? ` <small style="font-size:15px;color:var(--muted)">${esc(t.handle)}</small>` : ""}</div>
+          <div class="route">
+            <div><div class="code">${esc(t.from_city ? fromCode(t.from_city) : "YOU")}</div><div class="lbl">${esc(t.from_city || "Flying in from")}</div></div>
+            <div class="plane"></div>
+            <div style="text-align:right"><div class="code">${esc(city.code)}</div><div class="lbl">${esc(city.name)}</div></div>
+          </div>
+          <div class="perf"></div>
+          <div class="pass-row">
+            <div><span>Dates</span><b>${esc(shortRange(t.arrive_on, t.leave_on))}</b></div>
+            <div><span>Here for</span><b>${esc(t.here_for || "—")}</b></div>
+            <div><span>Same days</span><b>${others === null ? "Post to see" : others > 0 ? others + (others === 1 ? " other" : " others") : "You're first"}</b></div>
+            <div><span>Class</span><b>Insider</b></div>
+          </div>
+          <div class="barcode" aria-hidden="true"></div>
+          <div class="pno">${esc(CONFIG.brand)} · Who's in town</div>
+        </div>
+      </div>`;
+  }
+  function nextMyTrip() {
+    return myTrips().filter((m) => m.leave_on >= today() && m.here_for !== "Blank Locations").sort((a, b) => a.arrive_on < b.arrive_on ? -1 : 1)[0];
+  }
+  function renderLanding() {
+    const mine = nextMyTrip();
+    const grid = $("#landGrid");
+    grid.classList.toggle("done", !!mine);
+    $("#landForm").style.display = mine ? "none" : "";
+    if (mine) {
+      const city = cityBy(mine.city) || { name: mine.city };
+      $("#landPass").innerHTML = tripPassHtml(mine, true);
+      $("#landDone").innerHTML = `
+        <div class="pass-done">
+          <span class="tag">Your next trip</span>
+          <h3 style="font-size:24px">You're on the list for ${esc(city.name)}.</h3>
+          <p>Screenshot your boarding pass and post it on your story. Tag <b>@blanklocations</b> so we can repost you.</p>
+          <div class="ev-actions">
+            <button class="btn btn-blue" type="button" data-city="${esc(mine.city)}">See who's in town</button>
+            <button class="btn btn-line" type="button" id="tripShare">Share Blank Travel</button>
+          </div>
+          <p class="ev-note"><a href="#landing" id="tripAnother" style="color:var(--blue);font-weight:700">Post another trip →</a></p>
+        </div>`;
+      $("#tripAnother").addEventListener("click", (e) => { e.preventDefault(); showForm(); });
+      $("#tripShare").addEventListener("click", async (e) => {
+        const url = location.origin + location.pathname;
+        try {
+          if (navigator.share) await navigator.share({ title: CONFIG.brand, text: `I'm landing in ${city.name}. See who's in town:`, url });
+          else { await navigator.clipboard.writeText(url); e.target.textContent = "Link copied"; }
+        } catch {}
+      });
+    } else showForm();
+  }
+  function livePreview() {
+    const d = Object.fromEntries(new FormData($("#landForm")).entries());
+    $("#landPass").innerHTML = tripPassHtml({ first_name: (d.first_name || "").trim(), handle: (d.handle || "").trim(), from_city: (d.from_city || "").trim(), city: d.city, arrive_on: d.arrive_on, leave_on: d.leave_on, here_for: d.here_for }, false);
+  }
+  function showForm() {
+    $("#landGrid").classList.remove("done");
+    $("#landForm").style.display = "";
+    $("#landDone").innerHTML = "";
+    livePreview();
+  }
+  $("#landForm").addEventListener("input", livePreview);
+  $("#landForm").addEventListener("change", livePreview);
+
   // Post a trip
   $("#landForm").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -842,7 +937,7 @@ const CONFIG = {
     msg.classList.remove("err");
     if (!form.checkValidity()) { form.reportValidity(); return; }
     const d = Object.fromEntries(new FormData(form).entries());
-    const trip = { first_name: d.first_name.trim(), handle: d.handle.trim() || null, city: d.city, arrive_on: d.arrive_on, leave_on: d.leave_on, here_for: d.here_for };
+    const trip = { first_name: d.first_name.trim(), handle: d.handle.trim() || null, from_city: (d.from_city || "").trim() || null, city: d.city, arrive_on: d.arrive_on, leave_on: d.leave_on, here_for: d.here_for };
     const err = (t) => { msg.classList.add("err"); msg.textContent = t; };
     if (trip.leave_on < trip.arrive_on) return err("Your leaving date is before your arrival.");
     if (trip.leave_on < today()) return err("That trip has already ended.");
@@ -859,11 +954,14 @@ const CONFIG = {
       } else { msg.textContent = "Almost live. Trip posts open soon."; return; }
       saveMyTrip(trip);
       form.reset();
+      msg.textContent = "";
       renderCities($("#searchInput").value);
-      const c = cityBy(trip.city);
-      msg.textContent = hasDb() ? `You're on the list for ${c.name}. Tap the city to see who's there.` : "Got it. Your trip is in.";
+      renderLanding();
+      document.getElementById("landing").scrollIntoView({ behavior: "smooth" });
     } catch { err("Something went wrong. Try again."); }
   });
+
+  renderLanding();
 
   wireForm($("#localForm"));
   wireForm($("#tipForm"));
