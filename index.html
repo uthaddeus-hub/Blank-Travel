@@ -205,6 +205,37 @@
   .land-grid .pass-done p { color: var(--muted); font-size: 15px; margin-top: 6px; }
   @media (max-width: 860px) { .land-grid { grid-template-columns: 1fr; } .land-grid.done .land-pass { order: -1; } }
 
+  /* Itinerary */
+  .itin { margin-top: 30px; }
+  .itin-head h3 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 24px; line-height: 1.1; margin: 0; }
+  .itin-head .kicker { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--blue); display: block; margin-bottom: 6px; }
+  .itin-stay { margin-top: 10px; background: var(--blue-soft); color: var(--ink); border-radius: 12px; padding: 10px 14px; font-size: 14px; }
+  .itin-day { margin-top: 12px; background: var(--card); border: 1.5px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .itin-day summary { list-style: none; cursor: pointer; padding: 14px 16px; font-weight: 800; font-family: 'Bricolage Grotesque', sans-serif; font-size: 18px; display: flex; justify-content: space-between; align-items: center; }
+  .itin-day summary::-webkit-details-marker { display: none; }
+  .itin-day summary::after { content: "+"; font-size: 22px; color: var(--muted); }
+  .itin-day[open] summary::after { content: "–"; }
+  .stop { display: grid; grid-template-columns: 78px 1fr; gap: 12px; padding: 12px 16px; border-top: 1px dashed var(--line); }
+  .stop .tm { font-size: 13px; font-weight: 700; color: var(--muted); padding-top: 2px; }
+  .stop b { display: block; font-size: 15px; }
+  .stop .pl { font-size: 13px; color: var(--muted); }
+  .stop .nt { font-size: 14px; color: var(--ink); margin-top: 3px; }
+  .stop .links { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+  .stop .links a { font-size: 13px; font-weight: 700; color: var(--blue); }
+  .stop.blank { background: var(--ink); color: #fff; }
+  .stop.blank .tm, .stop.blank .pl { color: #B9BECB; }
+  .stop.blank .nt { color: #E8EAF0; }
+  .stop.blank .links a { color: #9FB0FF; }
+  .itin-foot { font-size: 13px; color: var(--muted); margin-top: 10px; }
+
+  .air { margin-top: 18px; background: var(--ink); color: #fff; border-radius: var(--radius); padding: 18px; }
+  .air .kicker { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #9FB0FF; }
+  .air h4 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; margin: 4px 0 10px; }
+  .air-spot { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 10px 0; border-top: 1px dashed #3A3E48; }
+  .air-spot b { font-size: 15px; }
+  .air-spot .gate { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); background: #FFD84D; border-radius: 6px; padding: 2px 8px; align-self: start; white-space: nowrap; }
+  .air-spot .nt { grid-column: 1 / -1; font-size: 14px; color: #C9CDD6; }
+
   /* Event check-in */
   body.event-mode main, body.event-mode footer, body.event-mode .nav-links, body.event-mode nav .btn { display: none; }
   #eventView { display: none; padding: 32px 0 64px; }
@@ -541,6 +572,122 @@ const CONFIG = {
     { slug: "chi", city: "CHI", title: "Blank Friday Chicago", date: "2026-11-27", venue: "Pressbox · 47 W Polk St", time: "9PM – 2AM", poshLink: "https://posh.vip/e/blank-locations-chi-blank-friday?t=blanktravel" }
   ],
 
+
+  // READY-SET-GO ITINERARIES: one per city code. Shown after someone gets
+  // their boarding pass and on the city page. Edit freely: change, add or
+  // remove stops. tag: "Black-owned" shows a badge. Map links are automatic.
+  itineraries: {
+    ATL: {
+      title: "Blank Friday weekend in Atlanta",
+      stay: "Stay in Buckhead to be close to High Society. Midtown works too if you want the BeltLine.",
+      days: [
+        { label: "Fri · Nov 27", items: [
+          { time: "Afternoon", what: "Land at ATL and check in", place: "Buckhead" },
+          { time: "6:00 PM", what: "BeltLine food hop at Krog Street Market", place: "Krog Street Market, Atlanta", note: "Walk the Eastside BeltLine and graze through the food hall. Small plates at a few spots instead of one big dinner." },
+          { time: "Or", what: "Sit-down dinner at Ticonderoga Club", place: "Ticonderoga Club, Krog Street Market, Atlanta", note: "Cocktail bar and restaurant tucked inside Krog Street Market. Small and popular, so book ahead." },
+          { time: "9:00 PM", what: "Pregame with a skyline view", place: "Whiskey Blue, Hotel Colee, Buckhead", note: "Rooftop bar a few minutes from the party." },
+          { time: "10:00 PM", what: "Blank Friday Atlanta", place: "High Society, 3201 Cains Hill Pl NW", note: "Show your Posh ticket at the door. Runs till 3AM.", blank: true }
+        ]},
+        { label: "Sat · Nov 28", items: [
+          { time: "11:30 AM", what: "Recovery brunch", place: "Breakfast at Barney's, Atlanta", note: "Get the 24k pancakes and the soul rolls. Expect a wait.", tag: "Black-owned" },
+          { time: "1:30 PM", what: "Ponce City Market", place: "Ponce City Market, Atlanta", note: "Shops, food hall and the rooftop." },
+          { time: "7:30 PM", what: "Dinner at Twisted Soul Cookhouse & Pours", place: "Twisted Soul Cookhouse & Pours, Atlanta", note: "Book ahead on a holiday weekend.", tag: "Black-owned" }
+        ]},
+        { label: "Sun · Nov 29", items: [
+          { time: "11:00 AM", what: "Brunch at Southern National", place: "Southern National, 72 Georgia Ave SE, Summerhill, Atlanta", note: "Beignets, fried chicken biscuit, champagne flights. Sunday brunch only, so reserve on Resy." },
+          { time: "After", what: "Head to ATL", place: "Hartsfield-Jackson Atlanta International Airport", note: "Eat past security. See Airport Eats below." }
+        ]}
+      ]
+    },
+    HOU: {
+      title: "Blank Locations weekend in Houston",
+      stay: "Stay in Midtown. Reset is right there, and so is brunch.",
+      days: [
+        { label: "Fri · Nov 27", items: [
+          { time: "Afternoon", what: "Land at IAH or Hobby and check in", place: "Midtown, Houston" },
+          { time: "7:30 PM", what: "Dinner at Lucille's", place: "Lucille's, 5512 La Branch St, Houston", note: "Southern food in a 1920s house in the Museum District. Book ahead.", tag: "Black-owned" }
+        ]},
+        { label: "Sat · Nov 28", items: [
+          { time: "10:00 AM", what: "Brunch at The Breakfast Klub", place: "The Breakfast Klub, Midtown, Houston", note: "Wings & waffles, katfish & grits. No alcohol, and there's always a line.", tag: "Black-owned" },
+          { time: "1:00 PM", what: "Hermann Park & the Museum District", place: "Hermann Park, Houston", note: "Easy afternoon walk before a late night." },
+          { time: "7:30 PM", what: "Dinner at Taste Bar + Kitchen", place: "Taste Bar + Kitchen, Houston", note: "Comfort food and cocktails.", tag: "Black-owned" },
+          { time: "10:00 PM", what: "Blank Locations Houston", place: "Reset, 606 Dennis St, Houston", note: "Rooftop with skyline views. Show your Posh ticket. Runs till 2AM.", blank: true }
+        ]},
+        { label: "Sun · Nov 29", items: [
+          { time: "11:00 AM", what: "Brunch at Josephine's Gulf Coast Tradition", place: "Josephine's Gulf Coast Tradition, Midtown, Houston", note: "Gulf Coast spin on brunch." },
+          { time: "After", what: "Head to IAH or Hobby", place: "George Bush Intercontinental Airport", note: "Eat past security. See Airport Eats below." }
+        ]}
+      ]
+    },
+    CHI: {
+      title: "Blank Friday weekend in Chicago",
+      stay: "Stay in the South Loop or the Loop. Pressbox is in Printer's Row.",
+      days: [
+        { label: "Fri · Nov 27", items: [
+          { time: "Afternoon", what: "Land at O'Hare or Midway and check in", place: "South Loop, Chicago" },
+          { time: "3:00 PM", what: "Christkindlmarket", place: "Daley Plaza, 50 W Washington St, Chicago", note: "Holiday market under the Picasso. Free, open till 9PM Fridays. Dress warm." },
+          { time: "6:00 PM", what: "Holiday dinner at The Walnut Room", place: "The Walnut Room, Macy's State Street, Chicago", note: "Chicago tradition with the giant tree." },
+          { time: "9:00 PM", what: "Blank Friday Chicago", place: "Pressbox, 47 W Polk St, Chicago", note: "Show your Posh ticket. Runs till 2AM.", blank: true }
+        ]},
+        { label: "Sat · Nov 28", items: [
+          { time: "11:00 AM", what: "Brunch at Brûlée", place: "Brûlée, 2036 S Michigan Ave, Chicago", note: "Get the crème brûlée French toast.", tag: "Black-owned" },
+          { time: "1:30 PM", what: "Millennium Park & The Bean", place: "Millennium Park, Chicago", note: "The photo you came for." },
+          { time: "7:30 PM", what: "Dinner at Chemistry", place: "Chemistry, Hyde Park, Chicago", note: "Steakhouse with white-glove service. Book ahead.", tag: "Black-owned" }
+        ]},
+        { label: "Sun · Nov 29", items: [
+          { time: "10:30 AM", what: "Brunch at Batter & Berries", place: "Batter & Berries, 2748 N Lincoln Ave, Chicago", note: "Order the French toast flight. It's BYOB, so bring bubbles.", tag: "Black-owned" },
+          { time: "After", what: "Head to O'Hare or Midway", place: "O'Hare International Airport", note: "Eat past security. See Airport Eats below." }
+        ]}
+      ]
+    }
+  },
+
+  // AIRPORT EATS: the best food past security, by city. Shows under each
+  // city's itinerary. "where" = concourse/gate. Add a city by copying a block.
+  airportEats: {
+    ATL: [{
+      airport: "Hartsfield-Jackson Atlanta International (ATL)",
+      spots: [
+        { name: "One Flew South", where: "E Center", note: "The airport restaurant people plan layovers around. Sushi, Southern plates and real cocktails." },
+        { name: "Atlanta Johnny's Chicken and Waffles", where: "Gate E34", note: "Chicken and waffles before you board." },
+        { name: "Old Fourth Ward Distillery", where: "Gate E29", note: "Local Atlanta distillery bar for a pre-flight drink." },
+        { name: "Southern National Market", where: "Conc. T", note: "Grab-and-go from the Southern National team. Sandwiches, wraps and salads." }
+      ]
+    }],
+    HOU: [{
+      airport: "George Bush Intercontinental (IAH)",
+      spots: [
+        { name: "The Breakfast Klub", where: "Terminal A", note: "The same Houston brunch legend from the itinerary, now at the airport. Wings & waffles before you board.", tag: "Black-owned" },
+        { name: "Pappadeaux Seafood Kitchen", note: "Houston-born Cajun seafood. Gumbo and fried shrimp for the flight home." },
+        { name: "Whataburger", where: "Gate B1", note: "The Texas classic, if you need it." }
+      ]
+    }, {
+      airport: "William P. Hobby (HOU)",
+      spots: [
+        { name: "Killen's Barbecue", note: "Ronnie Killen's award-winning Texas BBQ. Brisket at the gate." },
+        { name: "Velvet Taco", note: "Houston-born tacos, voted best quick-serve airport restaurant in North America." },
+        { name: "The Spot", note: "Galveston's beach-bar icon. Burgers and a drink before takeoff." },
+        { name: "Throughgood Bistro & Bar", note: "Award-winning new spot for a proper sit-down meal." }
+      ]
+    }],
+    CHI: [{
+      airport: "O'Hare International (ORD)",
+      spots: [
+        { name: "Tortas Frontera", where: "T1 · T3 · T5", note: "Rick Bayless's tortas, often called the best airport restaurant in America." },
+        { name: "Goose Island", where: "T3 · Conc. L", note: "Chicago's own brewery. A beer and a sandwich before you board." },
+        { name: "Billy Goat Tavern", where: "T1 · Gate C19", note: "The Chicago institution: \"cheezborger, cheezborger.\"" },
+        { name: "Burger Federation", where: "T3 · Conc. L", note: "Award-winning burger spot." }
+      ]
+    }, {
+      airport: "Midway International (MDW)",
+      spots: [
+        { name: "Arami", where: "Conc. A Food Hall", note: "Real sushi, not the pre-packed kind. One of Midway's best." },
+        { name: "BIG & little's", where: "Conc. A Food Hall", note: "One of Chicago's best fish tacos." },
+        { name: "Billy Goat Tavern", where: "Conc. A Food Hall", note: "Same Chicago classic as O'Hare." }
+      ]
+    }]
+  },
+
   // The offers a local can sell. Change names, descriptions or prices per local below.
   locals: [
     {
@@ -668,6 +815,7 @@ const CONFIG = {
         </div>`).join("")}</div>`
         : `<div class="empty"><b>Nobody's posted ${esc(city.name)} yet.</b><a href="#landing" data-close style="color:var(--blue);font-weight:700">Post your trip →</a></div>`}
       ${CONFIG.layoverLink ? `<p class="lay-link">Traveling with friends? See when your crew overlaps on <a href="${esc(CONFIG.layoverLink)}" target="_blank" rel="noopener">Layover →</a></p>` : ""}
+      ${itineraryHtml(code)}
       <h3>Locals</h3>
       ${locals.length ? locals.map((l) => {
         const li = CONFIG.locals.indexOf(l);
@@ -833,6 +981,10 @@ const CONFIG = {
         </div>`).join("")}</div>
       </div>` : "";
     $("#evRight").innerHTML = passHtml + goingHtml;
+    const evIt = mine ? itineraryHtml(ev.city) : "";
+    let evItEl = document.getElementById("evItin");
+    if (!evItEl) { evItEl = document.createElement("div"); evItEl.id = "evItin"; evItEl.className = "container"; $("#eventView").appendChild(evItEl); }
+    evItEl.innerHTML = evIt ? `<div style="max-width:720px">${evIt}</div>` : "";
 
     const sh = $("#evShare");
     if (sh) sh.addEventListener("click", async () => {
@@ -906,6 +1058,49 @@ const CONFIG = {
       }
     });
   }
+  // ===== Airport Eats =====
+  function airportEatsHtml(code) {
+    let list = (CONFIG.airportEats || {})[code];
+    if (!list) return "";
+    if (!Array.isArray(list)) list = [list];
+    return list.filter((a) => a && a.spots && a.spots.length).map((a) => `<div class="air">
+      <span class="kicker">✈ Airport Eats · Past security</span>
+      <h4>${esc(a.airport)}</h4>
+      ${a.spots.map((x) => `<div class="air-spot"><b>${esc(x.name)}</b>${x.where ? `<span class="gate">${esc(x.where)}</span>` : ""}${x.note ? `<div class="nt">${esc(x.note)}</div>` : ""}${x.tag ? `<div class="nt"><span class="badge">${esc(x.tag)}</span></div>` : ""}</div>`).join("")}
+    </div>`).join("");
+  }
+
+  // ===== Ready-set-go itinerary =====
+  function itineraryHtml(code, opts = {}) {
+    const it = (CONFIG.itineraries || {})[code];
+    if (!it) return "";
+    const city = cityBy(code) || { name: code };
+    const map = (q) => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+    return `<section class="itin">
+      <div class="itin-head"><span class="kicker">Ready, set, go · Your weekend</span><h3>${esc(it.title || city.name + " itinerary")}</h3></div>
+      ${it.stay ? `<div class="itin-stay"><b>Where to stay:</b> ${esc(it.stay)}</div>` : ""}
+      ${it.days.map((d, i) => `
+        <details class="itin-day"${i === 0 || opts.allOpen ? " open" : ""}>
+          <summary>${esc(d.label)}</summary>
+          ${d.items.map((s) => `
+            <div class="stop${s.blank ? " blank" : ""}">
+              <div class="tm">${esc(s.time || "")}</div>
+              <div>
+                <b>${esc(s.what)}</b>
+                ${s.place ? `<div class="pl">${esc(s.place)}</div>` : ""}
+                ${s.note ? `<div class="nt">${esc(s.note)}</div>` : ""}
+                <div class="links">
+                  ${s.tag ? `<span class="badge">${esc(s.tag)}</span>` : ""}
+                  ${s.place ? `<a href="${esc(map(s.place))}" target="_blank" rel="noopener">Map ↗</a>` : ""}
+                </div>
+              </div>
+            </div>`).join("")}
+        </details>`).join("")}
+      ${airportEatsHtml(code)}
+      <p class="itin-foot">Picked by ${esc(CONFIG.brand)}. Holiday weekend, so check hours and book dinners ahead.</p>
+    </section>`;
+  }
+
   // ===== Trip boarding pass =====
   function shortRange(a, b) {
     if (!a) return "—";
@@ -956,7 +1151,7 @@ const CONFIG = {
           <h3 style="font-size:24px">${mine.hidden ? `You're landing in ${esc(city.name)}.` : `You're on the list for ${esc(city.name)}.`}</h3>
           <p>Screenshot your boarding pass and post it on your story. Tag <b>@blanklocations</b> so we can repost you.${mine.hidden ? " Your trip is private, so you won't show on Who's in town." : ""}</p>
           <div class="ev-actions">
-            <button class="btn btn-blue" type="button" data-city="${esc(mine.city)}">See who's in town</button>
+            <button class="btn btn-blue" type="button" data-city="${esc(mine.city)}">${(CONFIG.itineraries || {})[mine.city] ? "Who's in town + itinerary" : "See who's in town"}</button>
             <button class="btn btn-line" type="button" id="tripShare">Share Blank Travel</button>
           </div>
           <p class="ev-note"><a href="#landing" id="tripAnother" style="color:var(--blue);font-weight:700">Post another trip →</a></p>
@@ -1108,7 +1303,7 @@ const CONFIG = {
               <div class="line"></div>
               <div class="r"><div class="t">${esc(to.code)}</div><div class="c">${esc(arr ? "Last call " + arr : to.name)}</div></div>
             </div>
-            <div class="flight-meta"><span>Gate <b>${esc(x.venue || "On your Posh ticket")}</b></span>${st && st.n ? `<span><b>${st.n}</b> checked in${st.out ? ` · <b>${st.out}</b> flying in` : ""}</span>` : ""}</div>
+            <div class="flight-meta"><span>Gate <b>${esc(x.venue || "On your Posh ticket")}</b></span>${(CONFIG.itineraries || {})[x.city] ? `<span>✓ Weekend itinerary included</span>` : ""}${st && st.n ? `<span><b>${st.n}</b> checked in${st.out ? ` · <b>${st.out}</b> flying in` : ""}</span>` : ""}</div>
             <div class="fares">
               ${mine ? `<button class="fare main" type="button" data-pick-ev="${esc(x.slug)}" data-view="1"><b>View my boarding pass</b><small>You're checked in</small></button>`
                      : `<button class="fare main" type="button" data-pick-ev="${esc(x.slug)}"><b>I have my ticket</b><small>Check in · get boarding pass</small></button>`}
@@ -1124,7 +1319,7 @@ const CONFIG = {
             <div class="line"></div>
             <div class="r"><div class="t">${esc(to.code)}</div><div class="c">${esc(to.name)}</div></div>
           </div>
-          <div class="flight-meta"><span>No event, just the trip</span>${town ? `<span><b>${town}</b> posted trips here</span>` : ""}</div>
+          <div class="flight-meta"><span>No event, just the trip</span>${(CONFIG.itineraries || {})[B.to] ? `<span><b>Weekend itinerary</b> included</span>` : ""}${town ? `<span><b>${town}</b> posted trips here</span>` : ""}</div>
           <div class="fares"><button class="fare${evs.length ? "" : " main"}" type="button" data-pick-trip="1"><b>Select · Free</b><small>Boarding pass + who's in town + local guide</small></button></div>
         </article>
         ${evs.length ? "" : `<p class="hint">No Blank Locations events in ${esc(to.name)} yet. Follow <a href="${esc(CONFIG.instagram)}" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">@blanklocations</a> for new cities.</p>`}`;
@@ -1267,7 +1462,8 @@ const CONFIG = {
           <p class="ev-note"><a href="#" id="bookAgain" style="color:var(--blue);font-weight:700">Book another flight →</a></p>
         </div>
         <div class="ip">${isEv ? eventPass(x, mine) : tripPassHtml(trip, true)}</div>
-      </div>`;
+      </div>
+      ${itineraryHtml(B.to)}`;
     $("#bookShare").addEventListener("click", async (ev) => {
       try {
         if (navigator.share) await navigator.share({ title: CONFIG.brand, text: `I'm flying to ${to.name}. Book your flight:`, url: shareUrl });
