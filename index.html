@@ -325,7 +325,7 @@
             <label>Leaving<input name="leave_on" type="date" required></label>
           </div>
           <label>Flying in from<input name="from_city" maxlength="40" placeholder="e.g. Dallas"></label>
-          <label class="consent"><input type="checkbox" name="consent" required><span>Show my first name, handle, where I'm coming from and my dates to other travelers in that city.</span></label>
+          <label class="consent"><input type="checkbox" name="consent"><span><b style="color:var(--ink)">Show me on "Who's in town."</b> Only my first name, handle, where I'm from and my dates. Leave it unticked to stay private. You still get your pass.</span></label>
           <button class="btn btn-blue" type="submit">Post trip &amp; get my pass</button>
           <div class="msg" role="status" aria-live="polite"></div>
         </form>
@@ -722,7 +722,7 @@ const CONFIG = {
       <div class="ev-head">
         <span class="tag">You're checked in</span>
         <h1>See you in<br><em>${esc(city.name)}.</em></h1>
-        <p>Screenshot your boarding pass and post it on your story. Tag <b>@blanklocations</b> so we can repost you.</p>
+        <p>Screenshot your boarding pass and post it on your story. Tag <b>@blanklocations</b> so we can repost you.${mine.private ? " You checked in privately, so you won't show on the list." : ""}</p>
         <div class="ev-actions">
           <button class="btn btn-blue" id="evShare" type="button">Share the link</button>
           ${ev.poshLink ? `<a class="btn btn-line" href="${esc(ev.poshLink)}" target="_blank" rel="noopener">Event on Posh</a>` : ""}
@@ -740,7 +740,7 @@ const CONFIG = {
           <label>Instagram or TikTok<input name="handle" maxlength="40" placeholder="@yourhandle"></label>
         </div>
         <label>Coming from<input name="from_city" required maxlength="40" placeholder="e.g. Houston, or ${esc(city.name)} if you're local"></label>
-        <label class="consent"><input type="checkbox" name="consent" required><span>Show my first name, handle and where I'm coming from to others at this event.</span></label>
+        <label class="consent"><input type="checkbox" name="consent"><span><b style="color:var(--ink)">Show me on "Who's coming."</b> Only my first name, handle and where I'm from. Leave it unticked to stay private. You still get your pass.</span></label>
         <button class="btn btn-ink" type="submit">Get my boarding pass</button>
         <div class="msg" role="status" aria-live="polite"></div>
         ${ev.poshLink ? `<p class="ev-note">No ticket yet? <a href="${esc(ev.poshLink)}" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">Get it on Posh →</a></p>` : ""}
@@ -798,18 +798,21 @@ const CONFIG = {
       const msg = $(".msg", f); msg.classList.remove("err");
       if (!f.checkValidity()) { f.reportValidity(); return; }
       const d = Object.fromEntries(new FormData(f).entries());
-      const row = { first_name: d.first_name.trim(), handle: d.handle.trim() || null, from_city: d.from_city.trim(), city: ev.city, arrive_on: ev.date, leave_on: ev.date, here_for: "Blank Locations", event: ev.slug };
+      const isPublic = !!d.consent;
+      const row = { first_name: d.first_name.trim(), handle: d.handle.trim() || null, from_city: d.from_city.trim(), city: ev.city, arrive_on: ev.date, leave_on: ev.date, here_for: "Blank Locations", event: ev.slug, hidden: !isPublic };
       msg.textContent = "Printing your pass…";
       try {
-        if (hasDb()) {
-          const r = await fetch(dbBase(), { method: "POST", headers: { ...dbHeaders(), Prefer: "return=minimal" }, body: JSON.stringify(row) });
-          if (!r.ok) throw new Error();
-        } else if (CONFIG.formEndpoint) {
-          const r = await fetch(CONFIG.formEndpoint, { method: "POST", headers: { "Accept": "application/json", "Content-Type": "application/json" }, body: JSON.stringify({ ...row, _subject: "Event check-in: " + ev.title }) });
-          if (!r.ok) throw new Error();
-        }
-        going.push({ first_name: row.first_name, handle: row.handle, from_city: row.from_city });
-        saveCheckin({ first_name: row.first_name, handle: row.handle, from_city: row.from_city, n: going.length || null });
+        try {
+          if (hasDb()) {
+            const r = await fetch(dbBase(), { method: "POST", headers: { ...dbHeaders(), Prefer: "return=minimal" }, body: JSON.stringify(row) });
+            if (!r.ok) throw new Error();
+          } else if (CONFIG.formEndpoint) {
+            const r = await fetch(CONFIG.formEndpoint, { method: "POST", headers: { "Accept": "application/json", "Content-Type": "application/json" }, body: JSON.stringify({ ...row, _subject: "Event check-in: " + ev.title }) });
+            if (!r.ok) throw new Error();
+          }
+        } catch (saveErr) { if (isPublic) throw saveErr; } // private passes still print if saving fails
+        if (isPublic) going.push({ first_name: row.first_name, handle: row.handle, from_city: row.from_city });
+        saveCheckin({ first_name: row.first_name, handle: row.handle, from_city: row.from_city, n: going.length + (isPublic ? 0 : 1), private: !isPublic });
         saveMyTrip({ first_name: row.first_name, city: ev.city, arrive_on: ev.date, leave_on: ev.date, here_for: "Blank Locations" });
         renderEvent();
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -862,7 +865,7 @@ const CONFIG = {
   }
   function tripPassHtml(t, posted) {
     const city = cityBy(t.city) || { code: "---", name: "Where to?" };
-    const others = posted ? landings.filter((x) => x.city === t.city && x.arrive_on <= t.leave_on && t.arrive_on <= x.leave_on).length - 1 : null;
+    const others = posted ? landings.filter((x) => x.city === t.city && x.arrive_on <= t.leave_on && t.arrive_on <= x.leave_on).length - (t.hidden ? 0 : 1) : null;
     return `
       <div class="pass ev-pass">
         <div class="pass-top"><span>Boarding pass</span><span>${esc(CONFIG.brand)}</span></div>
@@ -899,8 +902,8 @@ const CONFIG = {
       $("#landDone").innerHTML = `
         <div class="pass-done">
           <span class="tag">Your next trip</span>
-          <h3 style="font-size:24px">You're on the list for ${esc(city.name)}.</h3>
-          <p>Screenshot your boarding pass and post it on your story. Tag <b>@blanklocations</b> so we can repost you.</p>
+          <h3 style="font-size:24px">${mine.hidden ? `You're landing in ${esc(city.name)}.` : `You're on the list for ${esc(city.name)}.`}</h3>
+          <p>Screenshot your boarding pass and post it on your story. Tag <b>@blanklocations</b> so we can repost you.${mine.hidden ? " Your trip is private, so you won't show on Who's in town." : ""}</p>
           <div class="ev-actions">
             <button class="btn btn-blue" type="button" data-city="${esc(mine.city)}">See who's in town</button>
             <button class="btn btn-line" type="button" id="tripShare">Share Blank Travel</button>
@@ -937,21 +940,24 @@ const CONFIG = {
     msg.classList.remove("err");
     if (!form.checkValidity()) { form.reportValidity(); return; }
     const d = Object.fromEntries(new FormData(form).entries());
-    const trip = { first_name: d.first_name.trim(), handle: d.handle.trim() || null, from_city: (d.from_city || "").trim() || null, city: d.city, arrive_on: d.arrive_on, leave_on: d.leave_on, here_for: d.here_for };
+    const isPublic = !!d.consent;
+    const trip = { first_name: d.first_name.trim(), handle: d.handle.trim() || null, from_city: (d.from_city || "").trim() || null, city: d.city, arrive_on: d.arrive_on, leave_on: d.leave_on, here_for: d.here_for, hidden: !isPublic };
     const err = (t) => { msg.classList.add("err"); msg.textContent = t; };
     if (trip.leave_on < trip.arrive_on) return err("Your leaving date is before your arrival.");
     if (trip.leave_on < today()) return err("That trip has already ended.");
     if ((new Date(trip.leave_on) - new Date(trip.arrive_on)) / 864e5 > 60) return err("Trips can be up to 60 days.");
     msg.textContent = "Posting…";
     try {
-      if (hasDb()) {
-        const res = await fetch(CONFIG.supabaseUrl.replace(/\/$/, "") + "/rest/v1/landings", { method: "POST", headers: { ...dbHeaders(), Prefer: "return=minimal" }, body: JSON.stringify(trip) });
-        if (!res.ok) throw new Error();
-        landings.push(trip);
-      } else if (CONFIG.formEndpoint) {
-        const res = await fetch(CONFIG.formEndpoint, { method: "POST", headers: { "Accept": "application/json", "Content-Type": "application/json" }, body: JSON.stringify({ ...trip, _subject: form.dataset.kind }) });
-        if (!res.ok) throw new Error();
-      } else { msg.textContent = "Almost live. Trip posts open soon."; return; }
+      try {
+        if (hasDb()) {
+          const res = await fetch(CONFIG.supabaseUrl.replace(/\/$/, "") + "/rest/v1/landings", { method: "POST", headers: { ...dbHeaders(), Prefer: "return=minimal" }, body: JSON.stringify(trip) });
+          if (!res.ok) throw new Error();
+        } else if (CONFIG.formEndpoint) {
+          const res = await fetch(CONFIG.formEndpoint, { method: "POST", headers: { "Accept": "application/json", "Content-Type": "application/json" }, body: JSON.stringify({ ...trip, _subject: form.dataset.kind }) });
+          if (!res.ok) throw new Error();
+        }
+      } catch (saveErr) { if (isPublic) throw saveErr; } // private passes still print if saving fails
+      if (isPublic && hasDb()) landings.push(trip);
       saveMyTrip(trip);
       form.reset();
       msg.textContent = "";
