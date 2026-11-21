@@ -151,6 +151,51 @@
   .lay-link { margin-top: 10px; font-size: 14px; color: var(--muted); }
   .lay-link a { color: var(--blue); font-weight: 700; }
 
+  /* Flight booking */
+  .book { margin-top: 26px; background: var(--card); border: 1.5px solid var(--ink); border-radius: 22px; padding: 16px; box-shadow: 6px 6px 0 var(--ink); max-width: 560px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .book label { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+  .book .full { grid-column: 1 / -1; }
+  .book .btn { grid-column: 1 / -1; padding: 14px 20px; font-size: 16px; }
+  .book-wrap { position: fixed; inset: 0; z-index: 55; display: none; background: var(--paper); overflow-y: auto; }
+  .book-wrap.show { display: block; }
+  .book-top { position: sticky; top: 0; z-index: 2; background: var(--ink); color: #fff; }
+  .book-top-in { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; }
+  .book-top .route-sm { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: .02em; }
+  .book-top .sub { font-size: 13px; color: #B9BECB; }
+  .book-top button { background: transparent; color: #fff; border: 1.5px solid #fff; border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 14px; }
+  .book-steps { display: flex; gap: 6px; list-style: none; padding: 0 0 12px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #8A8F99; overflow-x: auto; }
+  .book-steps li { white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+  .book-steps li + li::before { content: "›"; color: #5B606B; }
+  .book-steps li.on { color: #fff; }
+  .book-steps li.did { color: #9FB0FF; }
+  .book-body { padding: 24px 0 64px; max-width: 720px; }
+  .book-body h2 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 28px; line-height: 1.1; margin-bottom: 4px; }
+  .book-body .hint { color: var(--muted); margin-bottom: 18px; }
+  .flight { background: var(--card); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; }
+  .flight.blank { border-color: var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+  .flight-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; font-weight: 700; color: var(--muted); }
+  .flight-head .fno { letter-spacing: .1em; }
+  .flight-title { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 21px; margin-top: 6px; }
+  .legs { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; margin: 14px 0 10px; }
+  .legs .t { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; line-height: 1; }
+  .legs .c { font-size: 13px; color: var(--muted); font-weight: 600; margin-top: 4px; }
+  .legs .line { height: 2px; background: repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 10px); position: relative; }
+  .legs .line::after { content: "✈"; position: absolute; left: 50%; top: -12px; transform: translateX(-50%); background: var(--card); padding: 0 6px; color: var(--blue); font-size: 15px; }
+  .legs .r { text-align: right; }
+  .flight-meta { font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .flight-meta b { color: var(--ink); }
+  .fares { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  .fare { text-align: left; border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; background: var(--paper); color: var(--ink); display: flex; flex-direction: column; gap: 2px; }
+  .fare:hover { border-color: var(--ink); }
+  .fare small { color: var(--muted); font-size: 13px; }
+  .fare b { font-size: 15px; }
+  .fare.main { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .fare.main small { color: #DDE3FF; }
+  .tagb { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: var(--ink); color: #fff; }
+  .tagb.ok { background: var(--mint); color: var(--mint-ink); }
+  .issued { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .issued { grid-template-columns: 1fr; } .issued .ip { order: -1; } .fares { grid-template-columns: 1fr; } .book { grid-template-columns: 1fr 1fr; } }
+
   /* Trip boarding pass */
   .land-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 28px; align-items: start; }
   .land-grid .ev-pass { margin-top: 18px; }
@@ -256,11 +301,14 @@
     <div class="container hero-grid">
       <div>
         <span class="pill"><span class="d"></span><span id="heroPill"></span></span>
-        <h1>Just landed?<br><em>Meet your local.</em></h1>
+        <h1>Where are you<br><em>flying next?</em></h1>
         <p class="lede" id="heroLede"></p>
-        <form class="search" id="searchForm" role="search">
-          <input id="searchInput" type="search" placeholder="Where are you landing?" aria-label="Search for a city" autocomplete="off">
-          <button class="btn btn-blue" type="submit">Find locals</button>
+        <form class="book" id="bookForm" aria-label="Book your flight">
+          <label>From<input name="from" id="bookFrom" required maxlength="40" placeholder="e.g. Dallas" list="fromList" autocomplete="off"></label>
+          <label>To<select name="to" id="bookTo" required></select></label>
+          <label class="full">Date (optional)<input name="date" id="bookDate" type="date"></label>
+          <button class="btn btn-blue" type="submit">Search flights ✈</button>
+          <datalist id="fromList"></datalist>
         </form>
         <div class="quick" id="quick"></div>
       </div>
@@ -411,6 +459,19 @@
   </div>
 </footer>
 
+<!-- Flight booking flow -->
+<div class="book-wrap" id="bookWrap" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Book your flight">
+  <div class="book-top"><div class="container">
+    <div class="book-top-in">
+      <button type="button" id="bookBack">← Back</button>
+      <div style="text-align:center"><div class="route-sm" id="bookRoute"></div><div class="sub" id="bookSub"></div></div>
+      <button type="button" id="bookClose" aria-label="Close">✕</button>
+    </div>
+    <ol class="book-steps" id="bookSteps"><li>Search</li><li>Flight</li><li>Passenger</li><li>Pass</li></ol>
+  </div></div>
+  <div class="container"><div class="book-body" id="bookBody"></div></div>
+</div>
+
 <!-- Event check-in (shows when the link has ?event=atl, ?event=hou, ?event=chi) -->
 <section id="eventView" aria-live="polite">
   <div class="container ev-grid">
@@ -446,8 +507,8 @@
    ===================================================================== */
 const CONFIG = {
   brand: "Blank Travel",
-  heroPill: "Free · Locals who know the city",
-  heroLede: "Real people who live in the city or know it well. Get their list, ask them anything, or explore together. Always free.",
+  heroPill: "Free · Blank Locations events, trips & local guides",
+  heroLede: "Pick your destination, get your boarding pass, and see who's landing with you. Blank Locations events, city guides and real locals. Always free.",
   formEndpoint: "https://formspree.io/f/xrppvqbv",                 // e.g. "https://formspree.io/f/abcdwxyz"
   contactEmail: "",                 // shown in the footer, e.g. "hello@blanklocations.com"
   instagram: "https://www.instagram.com/blanklocations",
@@ -543,7 +604,7 @@ const CONFIG = {
       const res = await fetch(CONFIG.supabaseUrl.replace(/\/$/, "") + "/rest/v1/landings?select=first_name,handle,city,arrive_on,leave_on,here_for,from_city&order=arrive_on.asc&limit=500", { headers: dbHeaders() });
       if (!res.ok) throw new Error();
       landings = await res.json();
-      renderCities($("#searchInput").value);
+      renderCities();
       if (nextMyTrip()) renderLanding();
     } catch {}
   }
@@ -571,16 +632,6 @@ const CONFIG = {
 
   $("#quick").innerHTML = CONFIG.cities.slice(0, 5).map((c) => `<button type="button" data-city="${esc(c.code)}">${esc(c.name)}</button>`).join("");
 
-  $("#searchInput").addEventListener("input", (e) => renderCities(e.target.value));
-  $("#searchForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const q = $("#searchInput").value.trim().toLowerCase();
-    renderCities(q);
-    const exact = CONFIG.cities.find((c) => c.name.toLowerCase() === q || c.code.toLowerCase() === q)
-      || CONFIG.cities.filter((c) => c.name.toLowerCase().includes(q))[0];
-    if (q && exact) openCity(exact.code);
-    else document.getElementById("cities").scrollIntoView();
-  });
 
   document.addEventListener("click", (e) => {
     const c = e.target.closest("[data-city]");
@@ -961,13 +1012,286 @@ const CONFIG = {
       saveMyTrip(trip);
       form.reset();
       msg.textContent = "";
-      renderCities($("#searchInput").value);
+      renderCities();
       renderLanding();
       document.getElementById("landing").scrollIntoView({ behavior: "smooth" });
     } catch { err("Something went wrong. Try again."); }
   });
 
   renderLanding();
+
+  // ===== Book a flight (one link for everything) =====
+  const B = { from: "", to: "", date: "", flight: null, step: 2 };
+  const upcomingEvents = () => (CONFIG.events || []).filter((x) => x.date >= today()).sort((a, b) => a.date < b.date ? -1 : 1);
+  const eventsIn = (code) => upcomingEvents().filter((x) => x.city === code);
+  const evCheckin = (slug) => { try { return JSON.parse(localStorage.getItem("bt_checkin_" + slug) || "null"); } catch { return null; } };
+  const flightNo = (x) => "BL " + (100 * ((CONFIG.events || []).indexOf(x) + 1) + new Date(x.date + "T12:00:00").getDate());
+  const longDate = (d) => new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  let evStats = null;
+  async function loadEvStats() {
+    if (evStats || !hasDb()) return;
+    evStats = {};
+    try {
+      const r = await fetch(dbBase() + "?select=event,from_city,city&event=not.is.null&limit=5000", { headers: dbHeaders() });
+      if (!r.ok) return;
+      (await r.json()).forEach((row) => {
+        const st = evStats[row.event] || (evStats[row.event] = { n: 0, out: 0 });
+        st.n++; if (row.from_city && fromCode(row.from_city) !== row.city) st.out++;
+      });
+    } catch {}
+  }
+
+  // Search form
+  const evCodes = [...new Set(upcomingEvents().map((x) => x.city))];
+  $("#bookTo").innerHTML = `<option value="" disabled selected>Choose destination</option>` +
+    (evCodes.length ? `<optgroup label="★ Blank Locations events">${evCodes.map((c) => {
+      const e1 = eventsIn(c)[0]; return `<option value="${esc(c)}">${esc((cityBy(c) || { name: c }).name)} · ${esc(fmt(e1.date))}</option>`; }).join("")}</optgroup>` : "") +
+    `<optgroup label="All destinations">${CONFIG.cities.filter((c) => !evCodes.includes(c.code)).map((c) => `<option value="${esc(c.code)}">${esc(c.name)}</option>`).join("")}</optgroup>`;
+  $("#fromList").innerHTML = [...new Set([...CONFIG.cities.map((c) => c.name), ...Object.keys(KNOWN).filter((k) => k.length > 3).map((k) => k.replace(/\b\w/g, (m) => m.toUpperCase()))])].map((n) => `<option value="${esc(n)}">`).join("");
+  $("#quick").innerHTML = (evCodes.length ? evCodes : CONFIG.cities.slice(0, 5).map((c) => c.code)).map((c) => {
+    const e1 = eventsIn(c)[0], nm = (cityBy(c) || { name: c }).name;
+    return `<button type="button" data-book-to="${esc(c)}">${e1 ? "★ " : ""}${esc(nm)}${e1 ? " · " + esc(fmt(e1.date)) : ""}</button>`;
+  }).join("");
+  try { const f = localStorage.getItem("bt_from"); if (f) $("#bookFrom").value = f; } catch {}
+
+  $("#bookForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const f = e.target;
+    if (!f.checkValidity()) { f.reportValidity(); return; }
+    B.from = $("#bookFrom").value.trim(); B.to = $("#bookTo").value; B.date = $("#bookDate").value; B.flight = null;
+    try { localStorage.setItem("bt_from", B.from); } catch {}
+    openBooking(2);
+  });
+
+  function setHeader() {
+    const to = cityBy(B.to) || { code: B.to, name: B.to };
+    $("#bookRoute").textContent = `${B.from ? fromCode(B.from) : "YOU"} → ${to.code}`;
+    $("#bookSub").textContent = B.date ? `${to.name} · ${longDate(B.date)}` : to.name;
+    [...$("#bookSteps").children].forEach((li, i) => { li.className = i + 1 < B.step ? "did" : i + 1 === B.step ? "on" : ""; });
+  }
+  function openBooking(step) {
+    B.step = step;
+    $("#bookWrap").classList.add("show"); $("#bookWrap").setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    setHeader();
+    if (step === 2) renderFlights(); else if (step === 3) renderPassenger();
+    $("#bookWrap").scrollTop = 0;
+  }
+  function closeBooking() {
+    $("#bookWrap").classList.remove("show"); $("#bookWrap").setAttribute("aria-hidden", "true");
+    if (!$("#panelWrap").classList.contains("show")) document.body.style.overflow = "";
+    if (new URLSearchParams(location.search).get("to")) history.replaceState(null, "", location.pathname);
+  }
+  $("#bookClose").addEventListener("click", closeBooking);
+  $("#bookBack").addEventListener("click", () => { if (B.step === 3) openBooking(2); else closeBooking(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("#bookWrap").classList.contains("show")) closeBooking(); });
+
+  // Step 2: select flight
+  async function renderFlights() {
+    const to = cityBy(B.to) || { code: B.to, name: B.to };
+    const fromC = B.from ? fromCode(B.from) : "YOU";
+    const draw = () => {
+      let evs = eventsIn(B.to);
+      if (B.date) evs = evs.slice().sort((a, b) => Math.abs(new Date(a.date) - new Date(B.date)) - Math.abs(new Date(b.date) - new Date(B.date)));
+      const town = inCity(B.to).length;
+      $("#bookBody").innerHTML = `
+        <h2>Select your flight</h2>
+        <p class="hint">${B.from ? esc(B.from) : "You"} to ${esc(to.name)}${evs.length ? ` · ${evs.length} Blank Locations event${evs.length > 1 ? "s" : ""}` : ""}</p>
+        ${evs.map((x) => {
+          const st = evStats && evStats[x.slug], mine = evCheckin(x.slug);
+          const [dep, arr] = (x.time || "").split(/[–-]/).map((t) => t && t.trim());
+          return `<article class="flight blank">
+            <div class="flight-head"><span class="fno">${esc(flightNo(x))} · ${esc(longDate(x.date))}</span>${mine ? `<span class="tagb ok">Checked in ✓</span>` : `<span class="tagb">Blank Locations event</span>`}</div>
+            <div class="flight-title">${esc(x.title)}</div>
+            <div class="legs">
+              <div><div class="t">${esc(fromC)}</div><div class="c">${esc(dep ? "Doors " + dep : "Doors TBA")}</div></div>
+              <div class="line"></div>
+              <div class="r"><div class="t">${esc(to.code)}</div><div class="c">${esc(arr ? "Last call " + arr : to.name)}</div></div>
+            </div>
+            <div class="flight-meta"><span>Gate <b>${esc(x.venue || "On your Posh ticket")}</b></span>${st && st.n ? `<span><b>${st.n}</b> checked in${st.out ? ` · <b>${st.out}</b> flying in` : ""}</span>` : ""}</div>
+            <div class="fares">
+              ${mine ? `<button class="fare main" type="button" data-pick-ev="${esc(x.slug)}" data-view="1"><b>View my boarding pass</b><small>You're checked in</small></button>`
+                     : `<button class="fare main" type="button" data-pick-ev="${esc(x.slug)}"><b>I have my ticket</b><small>Check in · get boarding pass</small></button>`}
+              ${x.poshLink ? `<a class="fare" href="${esc(x.poshLink)}" target="_blank" rel="noopener"><b>Need a ticket ↗</b><small>Book on Posh, then check in</small></a>` : ""}
+            </div>
+          </article>`;
+        }).join("")}
+        <article class="flight">
+          <div class="flight-head"><span class="fno">BT · OPEN TICKET</span><span>${B.date ? esc(longDate(B.date)) : "Any dates"}</span></div>
+          <div class="flight-title">Just traveling to ${esc(to.name)}</div>
+          <div class="legs">
+            <div><div class="t">${esc(fromC)}</div><div class="c">${esc(B.from || "You")}</div></div>
+            <div class="line"></div>
+            <div class="r"><div class="t">${esc(to.code)}</div><div class="c">${esc(to.name)}</div></div>
+          </div>
+          <div class="flight-meta"><span>No event, just the trip</span>${town ? `<span><b>${town}</b> posted trips here</span>` : ""}</div>
+          <div class="fares"><button class="fare${evs.length ? "" : " main"}" type="button" data-pick-trip="1"><b>Select · Free</b><small>Boarding pass + who's in town + local guide</small></button></div>
+        </article>
+        ${evs.length ? "" : `<p class="hint">No Blank Locations events in ${esc(to.name)} yet. Follow <a href="${esc(CONFIG.instagram)}" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">@blanklocations</a> for new cities.</p>`}`;
+    };
+    draw();
+    if (!evStats && hasDb() && eventsIn(B.to).length) { await loadEvStats(); if (B.step === 2) draw(); }
+  }
+  $("#bookBody").addEventListener("click", (e) => {
+    const pe = e.target.closest("[data-pick-ev]"), pt = e.target.closest("[data-pick-trip]");
+    if (pe) {
+      const x = (CONFIG.events || []).find((y) => y.slug === pe.dataset.pickEv);
+      B.flight = { type: "event", ev: x };
+      if (pe.dataset.view) { showIssued(); return; }
+      openBooking(3);
+    }
+    if (pt) { B.flight = { type: "trip" }; openBooking(3); }
+    if (e.target.closest("[data-close-book]")) closeBooking();
+  });
+
+  // Step 3: passenger
+  function renderPassenger() {
+    const to = cityBy(B.to) || { code: B.to, name: B.to };
+    const isEv = B.flight && B.flight.type === "event";
+    const x = isEv ? B.flight.ev : null;
+    const leaveDefault = B.date || "";
+    $("#bookBody").innerHTML = `
+      <h2>Passenger details</h2>
+      <p class="hint">${isEv ? `${esc(x.title)} · ${esc(longDate(x.date))}` : `Open ticket to ${esc(to.name)}`}</p>
+      <form id="paxForm" class="form-card" style="margin-top:0">
+        <div class="row2">
+          <label>First name<input name="first_name" required maxlength="40" autocomplete="given-name"></label>
+          <label>Instagram or TikTok<input name="handle" maxlength="40" placeholder="@yourhandle"></label>
+        </div>
+        ${isEv ? "" : `
+        <div class="row2">
+          <label>Arriving<input name="arrive_on" type="date" required value="${esc(B.date)}"></label>
+          <label>Leaving<input name="leave_on" type="date" required value="${esc(leaveDefault)}"></label>
+        </div>
+        <label>Here for<select name="here_for"><option>Nightlife</option><option>Food</option><option>Meeting people</option><option>Work trip</option><option>Just exploring</option></select></label>`}
+        <label class="consent"><input type="checkbox" name="consent"><span><b style="color:var(--ink)">Show me on "${isEv ? "Who's coming" : "Who's in town"}."</b> Only my first name, handle and where I'm from${isEv ? "" : " and my dates"}. Leave it unticked to stay private. You still get your pass.</span></label>
+        <button class="btn btn-ink" type="submit">Issue my boarding pass</button>
+        <div class="msg" role="status" aria-live="polite"></div>
+      </form>`;
+    $("#paxForm").addEventListener("submit", issuePass);
+    $("#paxForm input").focus();
+  }
+
+  async function saveRow(row, isPublic, subject) {
+    try {
+      if (hasDb()) {
+        const r = await fetch(dbBase(), { method: "POST", headers: { ...dbHeaders(), Prefer: "return=minimal" }, body: JSON.stringify(row) });
+        if (!r.ok) throw new Error();
+      } else if (CONFIG.formEndpoint) {
+        const r = await fetch(CONFIG.formEndpoint, { method: "POST", headers: { "Accept": "application/json", "Content-Type": "application/json" }, body: JSON.stringify({ ...row, _subject: subject }) });
+        if (!r.ok) throw new Error();
+      }
+    } catch (err) { if (isPublic) throw err; }
+  }
+
+  async function issuePass(e) {
+    e.preventDefault();
+    const f = e.target, msg = $(".msg", f); msg.classList.remove("err");
+    if (!f.checkValidity()) { f.reportValidity(); return; }
+    const d = Object.fromEntries(new FormData(f).entries());
+    const isPublic = !!d.consent;
+    const base = { first_name: d.first_name.trim(), handle: d.handle.trim() || null, from_city: B.from || null, hidden: !isPublic };
+    const err = (t) => { msg.classList.add("err"); msg.textContent = t; };
+    msg.textContent = "Printing your pass…";
+    try {
+      if (B.flight.type === "event") {
+        const x = B.flight.ev;
+        await loadEvStats();
+        const row = { ...base, city: x.city, arrive_on: x.date, leave_on: x.date, here_for: "Blank Locations", event: x.slug };
+        await saveRow(row, isPublic, "Event check-in: " + x.title);
+        const st = (evStats && evStats[x.slug]) || { n: 0, out: 0 };
+        if (evStats) { evStats[x.slug] = { n: st.n + 1, out: st.out + (B.from && fromCode(B.from) !== x.city ? 1 : 0) }; }
+        try { localStorage.setItem("bt_checkin_" + x.slug, JSON.stringify({ first_name: row.first_name, handle: row.handle, from_city: row.from_city, n: st.n + 1, private: !isPublic })); } catch {}
+        saveMyTrip({ first_name: row.first_name, city: x.city, arrive_on: x.date, leave_on: x.date, here_for: "Blank Locations" });
+      } else {
+        const trip = { ...base, city: B.to, arrive_on: d.arrive_on, leave_on: d.leave_on, here_for: d.here_for };
+        if (trip.leave_on < trip.arrive_on) return err("Your leaving date is before your arrival.");
+        if (trip.leave_on < today()) return err("That trip has already ended.");
+        if ((new Date(trip.leave_on) - new Date(trip.arrive_on)) / 864e5 > 60) return err("Trips can be up to 60 days.");
+        await saveRow(trip, isPublic, "New trip posted (Who's in town)");
+        if (isPublic && hasDb()) landings.push(trip);
+        saveMyTrip(trip);
+        B.flight.trip = trip;
+        renderCities(); renderLanding();
+      }
+      showIssued();
+    } catch { err("Something went wrong. Try again."); }
+  }
+
+  // Step 4: boarding pass
+  function eventPass(x, mine) {
+    const city = cityBy(x.city) || { code: x.city, name: x.city };
+    const dateTxt = new Date(x.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }).toUpperCase();
+    return `
+      <div class="pass ev-pass">
+        <div class="pass-top"><span>Boarding pass</span><span>${esc(flightNo(x))}</span></div>
+        <div class="pass-body">
+          <div class="pname">${esc(mine.first_name)}${mine.handle ? ` <small style="font-size:15px;color:var(--muted)">${esc(mine.handle)}</small>` : ""}</div>
+          <div class="route">
+            <div><div class="code">${esc(mine.from_city ? fromCode(mine.from_city) : "YOU")}</div><div class="lbl">${esc(mine.from_city || "")}</div></div>
+            <div class="plane"></div>
+            <div style="text-align:right"><div class="code">${esc(city.code)}</div><div class="lbl">${esc(city.name)}</div></div>
+          </div>
+          <div class="perf"></div>
+          <div class="pass-row">
+            <div><span>Date</span><b>${esc(dateTxt)}</b></div>
+            <div><span>Boarding</span><b>${esc(x.time || "Doors TBA")}</b></div>
+            <div><span>Gate</span><b>${esc(x.venue || "Location on your Posh ticket")}</b></div>
+            <div><span>Class</span><b>Insider</b></div>
+          </div>
+          <div class="barcode" aria-hidden="true"></div>
+          <div class="pno">${esc(x.title)}${mine.n ? " · Passenger no. " + String(mine.n).padStart(3, "0") : ""}</div>
+        </div>
+      </div>`;
+  }
+  function showIssued() {
+    B.step = 4; setHeader();
+    const to = cityBy(B.to) || { code: B.to, name: B.to };
+    const isEv = B.flight.type === "event";
+    const x = isEv ? B.flight.ev : null;
+    const mine = isEv ? evCheckin(x.slug) : null;
+    const trip = !isEv ? B.flight.trip : null;
+    const priv = isEv ? mine && mine.private : trip && trip.hidden;
+    const shareUrl = location.origin + location.pathname + "?to=" + B.to.toLowerCase();
+    $("#bookBody").innerHTML = `
+      <div class="issued">
+        <div>
+          <span class="tag">${isEv ? "You're checked in" : "Ticket issued"}</span>
+          <h2>See you in ${esc(to.name)}.</h2>
+          <p class="hint">Screenshot your boarding pass and post it on your story. Tag <b>@blanklocations</b> so we can repost you.${priv ? " You're private, so you won't show on the list." : ""}</p>
+          <div class="ev-actions" style="margin-top:0">
+            <button class="btn btn-blue" type="button" id="bookShare">Share this flight</button>
+            <button class="btn btn-line" type="button" data-city="${esc(B.to)}" data-close-book="1">${isEv ? "See who's coming" : "See who's in town"}</button>
+          </div>
+          ${isEv && x.poshLink ? `<p class="ev-note">Bringing friends? <a href="${esc(x.poshLink)}" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">Send them the Posh link →</a></p>` : ""}
+          <p class="ev-note"><a href="#" id="bookAgain" style="color:var(--blue);font-weight:700">Book another flight →</a></p>
+        </div>
+        <div class="ip">${isEv ? eventPass(x, mine) : tripPassHtml(trip, true)}</div>
+      </div>`;
+    $("#bookShare").addEventListener("click", async (ev) => {
+      try {
+        if (navigator.share) await navigator.share({ title: CONFIG.brand, text: `I'm flying to ${to.name}. Book your flight:`, url: shareUrl });
+        else { await navigator.clipboard.writeText(shareUrl); ev.target.textContent = "Link copied"; }
+      } catch {}
+    });
+    $("#bookAgain").addEventListener("click", (ev) => { ev.preventDefault(); closeBooking(); window.scrollTo({ top: 0, behavior: "smooth" }); $("#bookFrom").focus(); });
+    $("#bookWrap").scrollTop = 0;
+  }
+
+  // quick buttons + ?to= links
+  document.addEventListener("click", (e) => {
+    const q = e.target.closest("[data-book-to]");
+    if (!q) return;
+    $("#bookTo").value = q.dataset.bookTo;
+    if ($("#bookFrom").value.trim()) $("#bookForm").requestSubmit();
+    else { $("#bookFrom").focus(); $("#bookFrom").reportValidity(); }
+  });
+  const toParam = (new URLSearchParams(location.search).get("to") || "").toUpperCase();
+  if (toParam && cityBy(toParam) && !ev) {
+    $("#bookTo").value = toParam;
+    if ($("#bookFrom").value.trim()) { B.from = $("#bookFrom").value.trim(); B.to = toParam; openBooking(2); }
+    else setTimeout(() => { $("#bookFrom").focus(); }, 300);
+  }
 
   wireForm($("#localForm"));
   wireForm($("#tipForm"));
