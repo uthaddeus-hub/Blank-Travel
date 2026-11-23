@@ -236,6 +236,9 @@
   .air-spot .gate { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); background: #FFD84D; border-radius: 6px; padding: 2px 8px; align-self: start; white-space: nowrap; }
   .air-spot .nt { grid-column: 1 / -1; font-size: 14px; color: #C9CDD6; }
 
+  .save-pass { width: 100%; justify-content: center; margin-top: 4px; }
+  .ev-actions .save-pass { flex-basis: 100%; }
+
   /* Event check-in */
   body.event-mode main, body.event-mode footer, body.event-mode .nav-links, body.event-mode nav .btn { display: none; }
   #eventView { display: none; padding: 32px 0 64px; }
@@ -883,6 +886,167 @@ const CONFIG = {
     $("#modalWrap").setAttribute("aria-hidden", "true");
   }
 
+  // ===== Save boarding pass as a 1080x1920 image (TikTok / Stories) =====
+  const passStore = {};
+  let passSeq = 0;
+  function saveBtn(getData, label) {
+    const id = "p" + (++passSeq);
+    passStore[id] = getData;
+    return `<button class="btn btn-ink save-pass" type="button" data-save-pass="${id}">${esc(label || "Save for TikTok / Story")} ↓</button>`;
+  }
+  function flightNoOf(x) {
+    const i = (CONFIG.events || []).indexOf(x);
+    return "BL " + (100 * (i + 1) + new Date(x.date + "T12:00:00").getDate());
+  }
+  function eventPassData(x, mine) {
+    const city = cityBy(x.city) || { code: x.city, name: x.city };
+    const d = new Date(x.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }).toUpperCase();
+    return {
+      headline: `See you in ${city.name}.`, flight: flightNoOf(x),
+      name: mine.first_name, handle: mine.handle,
+      fromCode: mine.from_city ? fromCode(mine.from_city) : "YOU", fromLbl: mine.from_city || "",
+      toCode: city.code, toLbl: city.name,
+      rows: [["Date", d], ["Boarding", x.time || "Doors TBA"], ["Gate", x.venue || "On your Posh ticket"], ["Class", "Insider"]],
+      foot: x.title + (mine.n ? "  ·  Passenger no. " + String(mine.n).padStart(3, "0") : "")
+    };
+  }
+  function tripPassData(t) {
+    const city = cityBy(t.city) || { code: t.city, name: t.city };
+    const others = landings.filter((x) => x.city === t.city && x.arrive_on <= t.leave_on && t.arrive_on <= x.leave_on).length - (t.hidden ? 0 : 1);
+    return {
+      headline: `Landing in ${city.name}.`, flight: "BT · OPEN TICKET",
+      name: t.first_name, handle: t.handle,
+      fromCode: t.from_city ? fromCode(t.from_city) : "YOU", fromLbl: t.from_city || "",
+      toCode: city.code, toLbl: city.name,
+      rows: [["Dates", shortRange(t.arrive_on, t.leave_on)], ["Here for", t.here_for || "Exploring"], ["Same days", others > 0 ? others + (others === 1 ? " other" : " others") : "You're first"], ["Class", "Insider"]],
+      foot: CONFIG.brand + "  ·  Who's in town"
+    };
+  }
+
+  function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  function fit(ctx, text, maxW, size, weight, family, min) {
+    let s = size; ctx.font = `${weight} ${s}px ${family}`;
+    while (ctx.measureText(text).width > maxW && s > (min || 20)) { s -= 2; ctx.font = `${weight} ${s}px ${family}`; }
+    if (ctx.measureText(text).width > maxW) { let t = text; while (t.length > 3 && ctx.measureText(t + "…").width > maxW) t = t.slice(0, -1); return t + "…"; }
+    return text;
+  }
+  function spaced(ctx, text, x, y, sp, align) {
+    const chars = [...text]; const w = chars.reduce((a, c) => a + ctx.measureText(c).width + sp, -sp);
+    let cx = align === "right" ? x - w : align === "center" ? x - w / 2 : x;
+    const prev = ctx.textAlign; ctx.textAlign = "left";
+    chars.forEach((c) => { ctx.fillText(c, cx, y); cx += ctx.measureText(c).width + sp; });
+    ctx.textAlign = prev;
+  }
+
+  async function drawPass(d) {
+    const W = 1080, H = 1920, HEAD = "'Bricolage Grotesque', 'Figtree', system-ui, sans-serif", BODY = "'Figtree', system-ui, sans-serif";
+    try { await Promise.all([document.fonts.load(`800 100px 'Bricolage Grotesque'`), document.fonts.load(`700 40px 'Figtree'`), document.fonts.load(`600 30px 'Figtree'`)]); } catch {}
+    const c = document.createElement("canvas"); c.width = W; c.height = H;
+    const ctx = c.getContext("2d");
+    const INK = "#15171C", BLUE = "#2440D8", PAPER = "#F6F4EE", MUTED = "#5B606B", FAINT = "#8A8F99";
+
+    // background
+    ctx.fillStyle = INK; ctx.fillRect(0, 0, W, H);
+    const g = ctx.createRadialGradient(W * 0.85, 260, 40, W * 0.85, 260, 900); g.addColorStop(0, "rgba(36,64,216,.55)"); g.addColorStop(1, "rgba(36,64,216,0)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+    // header (inside TikTok's safe zone)
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#fff"; ctx.font = `800 44px ${HEAD}`; ctx.fillText(CONFIG.brand.toUpperCase(), 80, 210);
+    ctx.fillStyle = "#9FB0FF"; ctx.font = `700 30px ${BODY}`; ctx.textAlign = "right"; ctx.fillText("@blanklocations", W - 80, 208); ctx.textAlign = "left";
+    ctx.fillStyle = "#9FB0FF"; ctx.font = `700 30px ${BODY}`; spaced(ctx, "NOW BOARDING", 80, 320, 6);
+    ctx.fillStyle = "#fff"; ctx.fillText("", 0, 0);
+    const head = fit(ctx, d.headline, W - 160, 92, 800, HEAD, 56); ctx.fillStyle = "#fff"; ctx.fillText(head, 80, 420);
+
+    // card
+    const X = 70, Y = 480, CW = W - 140, CH = 1020, R = 44;
+    ctx.save(); ctx.shadowColor = "rgba(0,0,0,.45)"; ctx.shadowBlur = 60; ctx.shadowOffsetY = 24;
+    rr(ctx, X, Y, CW, CH, R); ctx.fillStyle = "#fff"; ctx.fill(); ctx.restore();
+    // top band
+    ctx.save(); rr(ctx, X, Y, CW, CH, R); ctx.clip();
+    ctx.fillStyle = BLUE; ctx.fillRect(X, Y, CW, 112);
+    ctx.restore();
+    ctx.fillStyle = "#fff"; ctx.font = `700 30px ${BODY}`; spaced(ctx, "BOARDING PASS", X + 50, Y + 68, 5);
+    spaced(ctx, String(d.flight).toUpperCase(), X + CW - 50, Y + 68, 4, "right");
+
+    // name
+    const PX = X + 56, PW = CW - 112;
+    ctx.fillStyle = INK; const nm = fit(ctx, d.name || "Traveler", PW * 0.62, 64, 800, HEAD, 40); ctx.fillText(nm, PX, Y + 210);
+    const nmW = ctx.measureText(nm).width;
+    if (d.handle) { ctx.fillStyle = MUTED; const hd = fit(ctx, d.handle, PW - nmW - 24, 34, 600, BODY, 22); ctx.fillText(hd, PX + nmW + 22, Y + 210); }
+
+    // route
+    const RY = Y + 380;
+    ctx.fillStyle = INK;
+    const fc = fit(ctx, d.fromCode, 330, 176, 800, HEAD, 90); ctx.fillText(fc, PX - 6, RY);
+    ctx.textAlign = "right"; const tc = fit(ctx, d.toCode, 330, 176, 800, HEAD, 90); ctx.fillText(tc, PX + PW + 6, RY); ctx.textAlign = "left";
+    ctx.font = `800 176px ${HEAD}`;
+    const midL = PX + Math.min(ctx.measureText(d.fromCode).width, 330) + 30, midR = PX + PW - Math.min(ctx.measureText(d.toCode).width, 330) - 30, my = RY - 62;
+    ctx.strokeStyle = "#C9C6BD"; ctx.lineWidth = 4; ctx.setLineDash([14, 12]); ctx.beginPath(); ctx.moveTo(midL, my); ctx.lineTo(midR, my); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = "#fff"; ctx.fillRect((midL + midR) / 2 - 38, my - 34, 76, 68);
+    ctx.fillStyle = BLUE; ctx.font = `48px ${BODY}`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("✈", (midL + midR) / 2, my + 2); ctx.textBaseline = "alphabetic"; ctx.textAlign = "left";
+    ctx.fillStyle = MUTED; ctx.font = `600 32px ${BODY}`;
+    ctx.fillText(fit(ctx, d.fromLbl || "", 380, 32, 600, BODY, 22), PX, RY + 56);
+    ctx.textAlign = "right"; ctx.fillText(fit(ctx, d.toLbl || "", 380, 32, 600, BODY, 22), PX + PW, RY + 56); ctx.textAlign = "left";
+
+    // perforation
+    const PY = Y + 500;
+    ctx.strokeStyle = "#D9D6CC"; ctx.lineWidth = 3; ctx.setLineDash([12, 12]); ctx.beginPath(); ctx.moveTo(X + 50, PY); ctx.lineTo(X + CW - 50, PY); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = INK; [X, X + CW].forEach((cx) => { ctx.beginPath(); ctx.arc(cx, PY, 30, 0, Math.PI * 2); ctx.fill(); });
+
+    // rows 2x2
+    const colW = (PW - 40) / 2;
+    d.rows.slice(0, 4).forEach(([lab, val], i) => {
+      const cx = PX + (i % 2) * (colW + 40), cy = PY + 86 + Math.floor(i / 2) * 136;
+      ctx.fillStyle = FAINT; ctx.font = `700 26px ${BODY}`; spaced(ctx, String(lab).toUpperCase(), cx, cy, 4);
+      ctx.fillStyle = INK;
+      const v = String(val); ctx.font = `800 42px ${HEAD}`;
+      if (ctx.measureText(v).width > colW && v.includes(" · ")) {
+        const [a1, a2] = v.split(" · ");
+        ctx.fillText(fit(ctx, a1, colW, 42, 800, HEAD, 26), cx, cy + 50);
+        ctx.fillStyle = MUTED; ctx.fillText(fit(ctx, a2, colW, 28, 700, BODY, 20), cx, cy + 88);
+      } else ctx.fillText(fit(ctx, v, colW, 42, 800, HEAD, 24), cx, cy + 54);
+    });
+
+    // barcode
+    const BY = Y + 852, BX = PX, BW = PW;
+    let seed = [...(d.name || "") + d.toCode + d.flight].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);
+    const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+    ctx.fillStyle = INK; for (let x = BX; x < BX + BW;) { const w = 3 + Math.floor(rnd() * 9); if (rnd() > 0.35) ctx.fillRect(x, BY, w, 86); x += w + 3 + Math.floor(rnd() * 6); }
+    ctx.fillStyle = FAINT; ctx.font = `700 24px ${BODY}`; spaced(ctx, fit(ctx, String(d.foot || "").toUpperCase(), BW - 60, 24, 700, BODY, 16), PX, BY + 126, 3);
+
+    // CTA (above TikTok's caption area)
+    const host = location.host && !/^(localhost|127\.)/.test(location.host) ? location.host : "";
+    ctx.fillStyle = "#fff"; ctx.font = `800 52px ${HEAD}`; ctx.fillText("Book your flight →", 80, 1598);
+    ctx.fillStyle = "#9FB0FF"; ctx.font = `700 36px ${BODY}`; ctx.fillText(host || CONFIG.brand + " · link in bio", 80, 1652);
+
+    return new Promise((res) => c.toBlob(res, "image/png"));
+  }
+
+  document.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-save-pass]");
+    if (!b) return;
+    const getData = passStore[b.dataset.savePass];
+    if (!getData) return;
+    const label = b.innerHTML; b.disabled = true; b.textContent = "Making your pass…";
+    try {
+      const blob = await drawPass(getData());
+      const file = new File([blob], "blank-boarding-pass.png", { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: "My boarding pass" }); b.textContent = "Saved ✓"; }
+        catch (err) { b.innerHTML = label; }
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a"); a.href = url; a.download = "blank-boarding-pass.png";
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+        b.textContent = "Saved ✓";
+      }
+    } catch { b.textContent = "Try again"; }
+    b.disabled = false;
+    setTimeout(() => { if (b.textContent !== label) b.innerHTML = label; }, 3500);
+  });
+
   // ===== Event check-in + boarding pass =====
   const evSlug = (new URLSearchParams(location.search).get("event") || "").toLowerCase();
   const ev = (CONFIG.events || []).find((x) => x.slug === evSlug);
@@ -921,8 +1085,9 @@ const CONFIG = {
       <div class="ev-head">
         <span class="tag">You're checked in</span>
         <h1>See you in<br><em>${esc(city.name)}.</em></h1>
-        <p>Screenshot your boarding pass and post it on your story. Tag <b>@blanklocations</b> so we can repost you.${mine.private ? " You checked in privately, so you won't show on the list." : ""}</p>
+        <p>Save your boarding pass and post it on TikTok or your story. Tag <b>@blanklocations</b> so we can repost you.${mine.private ? " You checked in privately, so you won't show on the list." : ""}</p>
         <div class="ev-actions">
+          ${saveBtn(() => eventPassData(ev, myCheckin()))}
           <button class="btn btn-blue" id="evShare" type="button">Share the link</button>
           ${ev.poshLink ? `<a class="btn btn-line" href="${esc(ev.poshLink)}" target="_blank" rel="noopener">Event on Posh</a>` : ""}
         </div>
@@ -1149,8 +1314,9 @@ const CONFIG = {
         <div class="pass-done">
           <span class="tag">Your next trip</span>
           <h3 style="font-size:24px">${mine.hidden ? `You're landing in ${esc(city.name)}.` : `You're on the list for ${esc(city.name)}.`}</h3>
-          <p>Screenshot your boarding pass and post it on your story. Tag <b>@blanklocations</b> so we can repost you.${mine.hidden ? " Your trip is private, so you won't show on Who's in town." : ""}</p>
+          <p>Save your boarding pass and post it on TikTok or your story. Tag <b>@blanklocations</b> so we can repost you.${mine.hidden ? " Your trip is private, so you won't show on Who's in town." : ""}</p>
           <div class="ev-actions">
+            ${saveBtn(() => tripPassData(nextMyTrip()))}
             <button class="btn btn-blue" type="button" data-city="${esc(mine.city)}">${(CONFIG.itineraries || {})[mine.city] ? "Who's in town + itinerary" : "See who's in town"}</button>
             <button class="btn btn-line" type="button" id="tripShare">Share Blank Travel</button>
           </div>
@@ -1453,8 +1619,9 @@ const CONFIG = {
         <div>
           <span class="tag">${isEv ? "You're checked in" : "Ticket issued"}</span>
           <h2>See you in ${esc(to.name)}.</h2>
-          <p class="hint">Screenshot your boarding pass and post it on your story. Tag <b>@blanklocations</b> so we can repost you.${priv ? " You're private, so you won't show on the list." : ""}</p>
+          <p class="hint">Save your boarding pass and post it on TikTok or your story. Tag <b>@blanklocations</b> so we can repost you.${priv ? " You're private, so you won't show on the list." : ""}</p>
           <div class="ev-actions" style="margin-top:0">
+            ${saveBtn(isEv ? () => eventPassData(x, evCheckin(x.slug)) : () => tripPassData(trip))}
             <button class="btn btn-blue" type="button" id="bookShare">Share this flight</button>
             <button class="btn btn-line" type="button" data-city="${esc(B.to)}" data-close-book="1">${isEv ? "See who's coming" : "See who's in town"}</button>
           </div>
